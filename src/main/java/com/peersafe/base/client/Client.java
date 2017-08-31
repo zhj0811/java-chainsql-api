@@ -1479,6 +1479,33 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         Request request = newRequest(Command.book_offers);
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
+        request.request();
+        waiting(request);
+        return request;
+    }
+
+    /**
+    * Request for account offers
+    * @param accoundID
+    * @return Request data
+    */
+    public Request requestAccountOffers(AccountID accountID){
+        Request request = newRequest(Command.account_offers);
+        request.json("account", accountID.address);
+        request.request();
+        waiting(request);
+        return request;
+    }
+    /**
+    * Request for accountline
+    * @param accountID
+    * @reture Request data
+    */
+    public Request requestAccountLines(AccountID accountID){
+        Request request = newRequest(Command.account_lines);
+        request.json("account",accountID.address);
+        request.request();
+        waiting(request);
         return request;
     }
 }
