@@ -1330,6 +1330,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	}
    	 	}
     }
+
+    private void longWaiting(Request request){
+        int count = 500;
+        while(request.response == null){
+            Util.waiting();
+            if(--count == 0){
+                break;
+           }
+       }
+    }
+
     /**
      * Get transaction count on chain.
      * @return Transaction account data.
@@ -1480,7 +1491,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
         request.request();
-        waiting(request);
+        longWaiting(request);
         return request;
     }
 
