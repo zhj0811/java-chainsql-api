@@ -1322,23 +1322,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
     private void waiting(Request request){
-        int count = 100;
+        int count = 50;
         while(request.response==null){
         	Util.waiting(); 
         	if(--count == 0){
         		break;
         	}
    	 	}
-    }
-
-    private void longWaiting(Request request){
-        int count = 300;
-        while(request.response == null){
-            Util.waiting();
-            if(--count == 0){
-                break;
-           }
-       }
     }
 
     /**
@@ -1491,7 +1481,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-     * Request for book offers.
+     * Request for book offers.s
      * @param get Get.
      * @param pay Pay.
      * @return Request data.
@@ -1501,7 +1491,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.json("taker_gets", get.toJSON());
         request.json("taker_pays", pay.toJSON());
         request.request();
-        longWaiting(request);
+        waiting(request);
         return request;
     }
 
