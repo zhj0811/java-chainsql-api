@@ -1332,7 +1332,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     private void longWaiting(Request request){
-        int count = 3000;
+        int count = 300;
         while(request.response == null){
             Util.waiting();
             if(--count == 0){
