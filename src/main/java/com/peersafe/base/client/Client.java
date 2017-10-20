@@ -1480,6 +1480,17 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
 
+    public Request uSubscribeBookOffers(Issue get, Issue pay) {
+        Request request = this.newRequest(Command.unsubscribe);
+        JSONObject book = new JSONObject();
+        JSONArray books = new JSONArray(new Object[]{book});
+        book.put("taker_gets", get.toJSON());
+        book.put("taker_pays", pay.toJSON());
+        book.put("both", true);
+        request.json("books", books);
+        return request;
+    }
+
     /**
      * Request for book offers.s
      * @param get Get.
