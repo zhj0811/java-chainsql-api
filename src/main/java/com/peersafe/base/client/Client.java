@@ -1170,12 +1170,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * @param cb Callback.
      * @return Request data.
      */
-	public Request select(AccountID account, AccountID owner, JSONObject[] tabarr, String raw) {
+	public Request select(AccountID account, AccountID owner, String name, String raw) {
+		String tablestr = "{\"Table\":{\"TableName\":\"" + name+ "\"}}";
+		JSONArray tableArray =  Util.strToJSONArray(tablestr);
 		Request request = newRequest(Command.r_get);
 		JSONObject txjson = new JSONObject();
 		txjson.put("Account", account);
 		txjson.put("Owner", owner);
-		txjson.put("Tables", tabarr);
+		txjson.put("Tables", tableArray);
 		txjson.put("Raw", raw);
 		txjson.put("OpType", 7);
 		request.json("tx_json", txjson);
@@ -1380,7 +1382,36 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
          request.request();
          waiting(request);
+
 	   	 return request;	
+    }
+    
+    public void getUserToken(final String owner,final String user,final String name,final Callback<JSONObject> cb) {
+       	makeManagedRequest(Command.g_userToken, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+	       	   	 JSONObject txjson = new JSONObject();
+	    	   	 txjson.put("Owner", owner);
+	    	   	 txjson.put("User", user);
+	    	   	 txjson.put("TableName", name);
+	    	   	 request.json("tx_json", txjson);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
     }
     
     /**

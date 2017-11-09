@@ -1,5 +1,7 @@
 package com.peersafe.chainsql.util;
 
+import static com.peersafe.base.config.Config.getB58IdentiferCodecs;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +10,10 @@ import java.util.Random;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import com.peersafe.base.encodings.B58IdentiferCodecs;
+import com.peersafe.chainsql.crypto.EncryptCommon;
+import com.peersafe.chainsql.net.Connection;
 
 
 public class Util {
@@ -69,64 +75,6 @@ public class Util {
     	return bytes;
     }
     
-    /**
-     * Check fields
-     * @param strraw Raw data list.
-     * @throws Exception Throws when exception occur.
-     */
-	public static void checkinsert(List<JSONObject> strraw) throws Exception{
-		boolean isHavePk = false;
-		for (int i = 0; i < strraw.size(); i++) {	
-			JSONObject json = strraw.get(i);
-			String field, type;
-	    	try {
-				field =json.getString("field");
-				type = json.getString("type");
-			} catch (Exception e) {
-				throw new Exception("Raw must have  field and type");
-				// TODO: handle exception
-			}
-
-    		if (field==null || type==null) {
-    			throw new Exception("field and type cannot be empty");
-    		}
-            if("int".equals(type)){
-
-            }else if("float".equals(type)){
-
-            }else if("double".equals(type)){
-
-            }else if("decimal".equals(type)){
-
-            }else if("varchar".equals(type)){
-            	try {
-    				int length = (int) json.getInt("length");
-    			} catch (Exception e) {
-    				throw new Exception(" The type varchar must have length");
-    			}
-            }else if("blob".equals(type)){
-
-            }else if("text".equals(type)){
-
-            }else if("datetime".equals(type) || "date".equals(type)){
-
-            }else{
-            	throw new Exception("invalid type "+type);
-            }
-            try {
-            	int PK =(int) json.getInt("PK");
-            	if(PK == 1){
-            		if (isHavePk) {
-            			throw new Exception("the table only have a PK");
-            		}
-            		isHavePk = true;
-            	}
-			} catch (Exception e) {
-				//throw new Exception("Raw must have  field and type");
-				//e.printStackTrace();
-			}
-		}
-	}
 	/**
 	 * Transfer byte array to Hex String
 	 * @param bytes Byte array to be hexed.
@@ -221,19 +169,64 @@ public class Util {
 	 * @param tx JSONObject to be unhexed.
 	 */
 	public static void unHexData(JSONObject tx){
-		if(tx.has("Raw")){
-			tx.put("Raw", fromHexString(tx.getString("Raw")));
-		}
+		String sTableName = "";
 		if(tx.has("Tables")){
 			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
 			table = table.getJSONObject("Table");
-			table.put("TableName", fromHexString(table.getString("TableName")));
+			sTableName = fromHexString(table.getString("TableName"));
+			table.put("TableName", sTableName);
 			if(table.has("TableNewName")){
 				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
 			}
 		}
+		if(tx.has("Raw")){
+			System.out.println("before decrypt:" + tx.getString("Raw"));
+			String sRaw = fromHexString(tx.getString("Raw"));		
+			tx.put("Raw", sRaw);
+		}
+
 		if(tx.has("Statements")){
 			tx.put("Statements", fromHexString(tx.getString("Statements")));
+		}
+		if(tx.has("OperationRule")){
+			tx.put("OperationRule", fromHexString(tx.getString("OperationRule")));
+		}
+	}
+	/**
+	 * unhex some fields
+	 * @param tx JSONObject to be unhexed.
+	 */
+	public static void decryptData(byte[] pass,JSONObject tx){
+		String sTableName = "";
+		if(tx.has("Tables")){
+			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+			table = table.getJSONObject("Table");
+			sTableName = fromHexString(table.getString("TableName"));
+			table.put("TableName", sTableName);
+			if(table.has("TableNewName")){
+				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
+			}
+		}
+		if(tx.has("Raw")){
+			String sRaw = tx.getString("Raw");
+			if(pass != null) {
+				byte[] rawBytes = hexToBytes(sRaw);
+				rawBytes = EncryptCommon.symDecrypt(rawBytes, pass);
+				sRaw = new String(rawBytes);
+			}else {
+				sRaw = fromHexString(sRaw);
+			}
+			tx.put("Raw", sRaw);
+		}
+		
+		if(tx.has("Statements")){
+			String sStatement = fromHexString(tx.getString("Statements"));
+			JSONArray statement = new JSONArray(sStatement);
+			for(int i=0; i<statement.length(); i++) {
+				JSONObject obj = statement.getJSONObject(i);
+				decryptData(pass,obj);
+			}
+			tx.put("Statements", statement);
 		}
 		if(tx.has("OperationRule")){
 			tx.put("OperationRule", fromHexString(tx.getString("OperationRule")));
@@ -262,4 +255,37 @@ public class Util {
 		obj.put("error_message", errMsg);
 		return obj;
 	}
+	
+	/**  
+	    * 将int数值转换为占四个字节的byte数组，本方法适用于(低位在前，高位在后)的顺序。 和bytesToInt（）配套使用 
+	    * @param value  
+	    *            要转换的int值 
+	    * @return byte数组 
+	    */
+	public static byte[] intToBytes( int value )   
+	{   
+	    byte[] src = new byte[4];  
+	    src[3] =  (byte) ((value>>24) & 0xFF);  
+	    src[2] =  (byte) ((value>>16) & 0xFF);  
+	    src[1] =  (byte) ((value>>8) & 0xFF);    
+	    src[0] =  (byte) (value & 0xFF);                  
+	    return src;   
+	}  
+	/**  
+	    * byte数组中取int数值，本方法适用于(低位在前，高位在后)的顺序，和和intToBytes（）配套使用 
+	    *   
+	    * @param src  
+	    *            byte数组  
+	    * @param offset  
+	    *            从数组的第offset位开始  
+	    * @return int数值  
+	    */    
+	public static int bytesToInt(byte[] src) {  
+	    int value;    
+	    value = (int) ((src[0] & 0xFF)   
+	            | ((src[1] & 0xFF)<<8)   
+	            | ((src[2] & 0xFF)<<16)   
+	            | ((src[3] & 0xFF)<<24));  
+	    return value;  
+	} 
 }

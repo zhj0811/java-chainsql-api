@@ -18,6 +18,7 @@ import com.peersafe.base.client.Client.OnReconnected;
 import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
 import com.peersafe.base.client.requests.Request;
+import com.peersafe.base.config.Config;
 import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.coretypes.Amount;
 import com.peersafe.base.core.fields.Field;
@@ -27,8 +28,8 @@ import com.peersafe.base.core.types.known.tx.signed.SignedTransaction;
 import com.peersafe.base.crypto.ecdsa.IKeyPair;
 import com.peersafe.base.crypto.ecdsa.Seed;
 import com.peersafe.base.encodings.B58IdentiferCodecs;
-import com.peersafe.chainsql.crypto.Aes;
 import com.peersafe.chainsql.crypto.Ecies;
+import com.peersafe.chainsql.crypto.EncryptCommon;
 import com.peersafe.chainsql.net.Connection;
 import com.peersafe.chainsql.resources.Constant;
 import com.peersafe.chainsql.util.EventManager;
@@ -40,7 +41,6 @@ public class Chainsql extends Submit {
 	public	EventManager event;
 
 	private JSONObject mTxJson;
-	private boolean strictMode = false;
 	
 	private static final int PASSWORD_LENGTH = 16;  
 	private static final int DEFAULT_TX_LIMIT = 20;
@@ -193,6 +193,23 @@ public class Chainsql extends Submit {
 	}
 	
 	/**
+	 * use guomi algorithm
+	 * @param useGM 
+	 * @param bNewKeyPair 是否生成新的公私钥对
+	 * @param pin default is '666666'
+	 * @throws Exception throws exception if failed.
+	 */
+	public void setUseGM(boolean useGM,boolean bNewKeyPair,String pin) throws Exception{
+		boolean isSuccess =  Config.setUseGM(useGM,bNewKeyPair,pin);
+		if(!isSuccess){
+			throw new Exception("设置使用国密失败!");
+		}
+	}
+	
+	public boolean isUseGM(){
+		return Config.isUseGM();
+	}
+	/**
 	 * Sign a transaction.
 	 * @param tx transaction Json.
 	 * @param secret 
@@ -235,7 +252,7 @@ public class Chainsql extends Submit {
 	    "hash":""
 	 }
 	 */
-	public JSONObject sign_for(JSONObject tx,String secret){
+	public JSONObject signFor(JSONObject tx,String secret){
 		if(!tx.has("secret")){
 			return Util.errorObject("no secret supplied");
 		}
@@ -287,6 +304,9 @@ public class Chainsql extends Submit {
 	@Override
 	JSONObject prepareSigned() {
 		try {
+			if(mTxJson.toString().equals("{}")) {
+				return Util.errorObject("Exception occured");
+			}
 			mTxJson.put("Account",this.connection.address);
 
 			//for cross chain
@@ -374,9 +394,11 @@ public class Chainsql extends Submit {
 	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
-			Util.checkinsert(listRaw);
+			Validate.checkCreate(listRaw,name);
 		} catch (Exception e) {
+			this.mTxJson = new JSONObject();
 			System.out.println("Exception:" + e.getLocalizedMessage());
+			return this;
 		}
 		
 		JSONObject json = new JSONObject();
@@ -393,7 +415,8 @@ public class Chainsql extends Submit {
 				return null;
 			}
 			json.put("Token", token);
-			strRaw = Aes.aesEncrypt(password, strRaw);
+			byte[] rawBytes = EncryptCommon.symEncrypt(strRaw.getBytes(),password );
+			strRaw = Util.bytesToHex(rawBytes);
 		}else{
 			strRaw = Util.toHexString(strRaw);
 		}
@@ -417,7 +440,12 @@ public class Chainsql extends Submit {
 	
 	private String generateUserToken(String seed,byte[] password){
 		IKeyPair keyPair = Seed.getKeyPair(seed);
-		return Ecies.eciesEncrypt(password, keyPair.canonicalPubBytes());
+		byte[] tokenBytes = null;
+		if(Config.isUseGM())
+			tokenBytes = EncryptCommon.asymEncrypt(password, null);
+		else
+			tokenBytes = EncryptCommon.asymEncrypt(password, keyPair.canonicalPubBytes());
+		return tokenBytes == null ? "" :Util.bytesToHex(tokenBytes);
 	}
 	/**
 	 * Recreate a table, for slimming the chain.
@@ -459,6 +487,11 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql renameTable(String oldName, String newName) {
+		if(newName == null || newName.isEmpty()) {
+			System.out.println("new table name can not be empty");
+			mTxJson = new JSONObject();
+			return this;
+		}
 		String tablestr = "{\"Table\":{\"TableName\":\"" + Util.toHexString(oldName) + "\",\"TableNewName\":\"" + Util.toHexString(newName) + "\"}}";
 		JSONArray table = new JSONArray();
 		table.put(new JSONObject(tablestr));
@@ -494,12 +527,17 @@ public class Chainsql extends Submit {
 		String newToken = "";
 		if(token.length() != 0){
 			try {
-				byte[] password = Ecies.eciesDecrypt(token, this.connection.secret);
+				byte[] seedBytes = null;
+				if(!this.connection.secret.isEmpty()){
+					seedBytes = getB58IdentiferCodecs().decodeFamilySeed(this.connection.secret);
+				}
+				byte[] password = EncryptCommon.asymDecrypt(Util.hexToBytes(token), seedBytes) ;
 				if(password == null){
 					return null;
 				}
 				byte [] pubBytes = getB58IdentiferCodecs().decode(userPublicKey, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
-				newToken = Ecies.eciesEncrypt(password, pubBytes);
+				byte[] newBytes = EncryptCommon.asymEncrypt(password, pubBytes);
+				newToken = Util.bytesToHex(newBytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -577,6 +615,7 @@ public class Chainsql extends Submit {
 	public void endTran(){
 		this.transaction = false;
 		this.mapToken.clear();
+		this.cache.clear();
 	}
 	/**
 	 * Commit a sql-transaction type operation.
@@ -865,18 +904,22 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
-		Seed seed = Seed.randomSeed();
-		
+		Seed seed = Seed.randomSeed();		
 		return generateAddress(seed);
 	}
 	
 	public JSONObject generateAddress(String secret){
 		Security.addProvider(new BouncyCastleProvider());
 		Seed seed = Seed.fromBase58(secret);
+		
 		return generateAddress(seed);
 	}
 	
 	private JSONObject generateAddress(Seed seed){
+		if(Config.isUseGM()){
+			seed.setGM();
+		}
+
 		IKeyPair keyPair = seed.keyPair();
 		byte[] pubBytes = keyPair.canonicalPubBytes();
 		byte[] o;
@@ -897,7 +940,9 @@ public class Chainsql extends Submit {
 		String address = getB58IdentiferCodecs().encodeAddress(o);
 		
 		JSONObject obj = new JSONObject();
-		obj.put("secret", secretKey);
+		if(!Config.isUseGM()){
+			obj.put("secret", secretKey);
+		}
 		obj.put("account_id", address);
 		obj.put("public_key", publicKey);
 		return obj;
@@ -1017,5 +1062,27 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject commit(Callback<?> cb){
 		return doCommit(cb);
+	}
+	
+	/**
+	 * 加密接口
+	 * @param plainText 明文
+	 * @param listPublicKey 公钥数组
+	 * @return 密文
+	 */
+	public String encrypt(String plainText,List<String> listPublicKey) {
+		byte[] cipher = Ecies.encryptText(plainText,listPublicKey);
+		return Util.bytesToHex(cipher);
+	}
+	
+	/**
+	 * 解密接口
+	 * @param cipher 密文
+	 * @param secret 私钥
+	 * @return 明文，解密失败返回""
+	 */
+	public String decrypt(String cipher,String secret) {
+		byte[] cipherBytes = Util.hexToBytes(cipher);
+		return Ecies.decryptText(cipherBytes, secret);
 	}
 }

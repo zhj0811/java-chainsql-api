@@ -14,6 +14,7 @@ public class TestSign {
 		testSignForPayment();
 		testSignForTrustSet();
 		testSignSignerListSet();
+		testSignPathset();
 	}
 	
 	private static void testSignPayment(){
@@ -124,7 +125,7 @@ public class TestSign {
 		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		JSONObject res = c.signFor(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		System.out.println("sign_for payment signer:" + res);
 	}
 	
@@ -146,7 +147,43 @@ public class TestSign {
 		tx_json.put("Sequence", 2);
 		obj.put("tx_json", tx_json);
 		
-		JSONObject res = c.sign(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
+		JSONObject res = c.signFor(obj, "snoPBrXtMeMyMHUVTgbuqAfg1SUTb");
 		System.out.println("sign_for trustset signer:" + res);
+	}
+	
+	private static void testSignPathset(){
+		JSONObject ptPayment = new JSONObject();
+	    ptPayment.put("Amount", "10000000000");
+	    ptPayment.put("Fee", "10000");
+	    ptPayment.put("Destination", "r3u4v4xqyweCeS2DYoFvWGmAJo2tphmUfc");
+	    ptPayment.put("Account", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh");
+	    ptPayment.put("Sequence", 1);
+	    ptPayment.put("TransactionType", "Payment");
+
+	    JSONObject sendMax = new JSONObject();
+	    sendMax.put("currency", "GRD");
+	    sendMax.put("issuer", "r3u4v4xqyweCeS2DYoFvWGmAJo2tphmUfc");
+	    sendMax.put("value", "10000");
+	    ptPayment.put("SendMax", sendMax);
+
+	    JSONObject  pathObj = new JSONObject();
+	    pathObj.put("type_hex", "0000000000000030");
+	    pathObj.put("currency", "GRD");
+	    pathObj.put("type", 48);
+	    pathObj.put("issuer", "r3u4v4xqyweCeS2DYoFvWGmAJo2tphmUfc");
+	    //ptPayment.push_back(std::make_pair("SendMax", sendMax));
+
+	    JSONArray   arrayPathInner  = new JSONArray();
+	    JSONArray arrayPathOuter  = new JSONArray();
+	    arrayPathInner.put( pathObj);
+
+	    arrayPathOuter.put(arrayPathInner);
+
+	    ptPayment.put("Paths", arrayPathOuter);
+	    JSONObject obj = new JSONObject();
+	    obj.put("tx_json", ptPayment);
+//	    System.out.println(ptPayment);
+	    JSONObject res = c.sign(obj, "sn9Bz7hSxpzzBapdxvf9dP7k8rTfu");
+		System.out.println("sign for Pathset signer:" + res);
 	}
 }
