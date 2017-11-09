@@ -1480,13 +1480,53 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
 
-    public Request uSubscribeBookOffers(Issue get, Issue pay) {
+    public Request subscribeBookOffers(JSONArray pairs) {
+        Request request = this.newRequest(Command.subscribe);
+        JSONArray books = new JSONArray();
+
+        if (pairs.length() > 0) {
+            for (int i = 0; i < pairs.length(); i++) {
+                JSONObject book = new JSONObject();
+                JSONObject pair = pairs.getJSONObject(i);
+                Issue get = (Issue) pair.get("get");
+                Issue pay = (Issue) pair.get("pay");
+                book.put("snapshot", true);
+                book.put("taker_gets", get.toJSON());
+                book.put("taker_pays", pay.toJSON());
+                books.put(book);
+            }
+        }
+        request.json("books", books);
+        return request;
+    }
+
+    public Request unSubscribeBookOffers(Issue get, Issue pay) {
         Request request = this.newRequest(Command.unsubscribe);
         JSONObject book = new JSONObject();
         JSONArray books = new JSONArray(new Object[]{book});
         book.put("taker_gets", get.toJSON());
         book.put("taker_pays", pay.toJSON());
         book.put("both", true);
+        request.json("books", books);
+        return request;
+    }
+
+    public Request unSubscribeBookOffers(JSONArray pairs) {
+        Request request = this.newRequest(Command.unsubscribe);
+        JSONArray books = new JSONArray();
+
+        if (pairs.length() > 0) {
+            for (int i = 0; i < pairs.length(); i++) {
+                JSONObject book = new JSONObject();
+                JSONObject pair = pairs.getJSONObject(i);
+                Issue get = (Issue) pair.get("get");
+                Issue pay = (Issue) pair.get("pay");
+                book.put("taker_gets", get.toJSON());
+                book.put("taker_pays", pay.toJSON());
+                book.put("both", true);
+                books.put(book);
+            }
+        }
         request.json("books", books);
         return request;
     }
