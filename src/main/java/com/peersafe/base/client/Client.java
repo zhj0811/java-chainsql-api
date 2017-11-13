@@ -689,7 +689,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             // Java-WebSocket transport implementation)
             //System.out.println("error_message: "+msg);
            // throw new RuntimeException(e);
-            e.printStackTrace;
+           e.printStackTrace();
         } finally {
             emit(OnStateChange.class, this);
         }
