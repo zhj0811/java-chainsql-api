@@ -158,19 +158,11 @@ public class Table extends Submit{
 		}
 		this.exec = "t_assert";
 		if (!this.transaction)
-			try {
-				System.out.println("Exception: you must begin the transaction first");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			System.out.println("Exception: you must begin the transaction first");
 		if (this.name==null)
-			try {
-				System.out.println("Exception: you must appoint the table name");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			System.out.println("Exception: you must appoint the table name");
 
-			return dealWithTransaction();
+		return dealWithTransaction();
 	}
 	
 	/**
@@ -217,16 +209,19 @@ public class Table extends Submit{
 	
 	private String tryEncryptRaw(String strRaw) throws Exception{
 		String token = "";
+		boolean bFound = false;
 		if(this.transaction){
 			GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
 			if(mapToken.containsKey(pair)){
 				token = mapToken.get(pair);
+				bFound = true;
 			}
 		}
-		if(token.equals("")){
+		if(token.equals("") && !bFound){
 			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
 			if(res.get("status").equals("error")){
-				System.out.println("Exception: "+res.getString("error_message"));
+				if(!this.transaction)
+					System.out.println("Exception: "+res.getString("error_message"));
 			}else{
 				token = res.getString("token");
 			}

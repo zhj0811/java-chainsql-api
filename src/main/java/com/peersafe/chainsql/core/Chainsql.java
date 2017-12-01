@@ -321,6 +321,7 @@ public class Chainsql extends Submit {
 	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
+	    		System.out.println(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			
@@ -404,6 +405,7 @@ public class Chainsql extends Submit {
 		JSONObject json = new JSONObject();
 		json.put("OpType", Constant.opType.get("t_create"));
 		json.put("Tables", getTableArray(name));
+		json.put("StrictMode", this.strictMode);
 		
 		String strRaw = listRaw.toString();
 		String token = "";
@@ -430,6 +432,8 @@ public class Chainsql extends Submit {
 			if(confidential){
 				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),token);
 				this.needVerify = 0;
+			}else {
+				this.mapToken.put(new GenericPair<String,String>(this.connection.address,name),"");
 			}
 			this.cache.add(json);
 			return null;
@@ -518,12 +522,19 @@ public class Chainsql extends Submit {
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
 	public Chainsql grant(String name, String user,String userPublicKey,String flag){
-		JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
-		if(res.get("status").equals("error")){
-			System.out.println(res.getString("error_message"));
-			return null;
+		String token = "";
+		GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
+		if(mapToken.containsKey(pair)){
+			token = mapToken.get(pair);
+		}else {
+			JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
+			if(res.get("status").equals("error")){
+				System.out.println(res.getString("error_message"));
+				return this;
+			}
+			token = res.getString("token");
 		}
-		String token = res.getString("token");
+
 		String newToken = "";
 		if(token.length() != 0){
 			try {
@@ -612,7 +623,7 @@ public class Chainsql extends Submit {
 	/**
 	 * End a sql-transaction type operation.
 	 */
-	public void endTran(){
+	private void endTran(){
 		this.transaction = false;
 		this.mapToken.clear();
 		this.cache.clear();
@@ -622,7 +633,9 @@ public class Chainsql extends Submit {
 	 * @return Commit result.
 	 */
 	public JSONObject commit(){
-		return doCommit("");
+		JSONObject obj = doCommit("");
+		endTran();
+		return obj;
 	}
 	
 	public Chainsql report(){
@@ -1002,8 +1015,8 @@ public class Chainsql extends Submit {
 			if(request.response.result!=null){
 				String balance = request.response.result.optJSONObject("account_data").getString("Balance");
 				BigInteger bal = new BigInteger(balance);
-				BigInteger xrp = bal.divide(BigInteger.valueOf(1000000));
-				return xrp.toString();
+				BigInteger zxc = bal.divide(BigInteger.valueOf(1000000));
+				return zxc.toString();
 			}else {
 				return null;
 			}
@@ -1072,6 +1085,8 @@ public class Chainsql extends Submit {
 	 */
 	public String encrypt(String plainText,List<String> listPublicKey) {
 		byte[] cipher = Ecies.encryptText(plainText,listPublicKey);
+		if(cipher == null)
+			return "";
 		return Util.bytesToHex(cipher);
 	}
 	
