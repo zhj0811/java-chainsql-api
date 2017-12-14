@@ -1619,21 +1619,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
 
     /**
-    * Request for account offers
-    * @param accoundID
-    * @return Request data
-    */
-    public Request requestAccountOffers(AccountID accountID,int limit,String marker){
-        Request request = newRequest(Command.account_offers);
-        request.json("account", accountID.address);
-        request.json("limit",limit);
-        request.json("marker",marker);
-        request.request();
-        waiting(request);
-        return request;
-    }
-
-    /**
     * Request for accountline
     * @param accountID
     * @reture Request data
