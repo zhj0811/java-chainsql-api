@@ -229,7 +229,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
         prepareExecutor();
         // requires executor, so call after prepareExecutor
-        scheduleMaintenance();
+        // 屏蔽掉重连机制，由上层来控制
+        // scheduleMaintenance();
 
         subscriptions.on(SubscriptionManager.OnSubscribed.class, new SubscriptionManager.OnSubscribed() {
             @Override
