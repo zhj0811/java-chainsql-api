@@ -351,6 +351,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public void disconnect() {
     	disconnectInner();
         service.shutdownNow();
+        connected = false;
         // our disconnect handler should do the rest
     }
     
