@@ -225,7 +225,10 @@ public abstract class Submit {
 //	    			if(!data.getString("status").equals("success"))
 	    				cb.called((JSONObject)data);
 	    		}else if(sync){
-	    			JSONObject obj = (JSONObject)data;
+	    			if(!data.has("transaction")) {
+	    				return;
+	    			}
+	    			JSONObject obj = data;
 	    			JSONObject res = new JSONObject();
 	    			JSONObject tx = (JSONObject) obj.get("transaction");
 	    			res.put("tx_hash", tx.get("hash").toString());

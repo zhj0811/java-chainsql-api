@@ -39,13 +39,13 @@ public class TestChainsql {
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
-		//建表
-		test.testCreateTable();
+//		//建表
+//		test.testCreateTable();
 //		//建表，用于重命名，删除
 //		test.testCreateTable1();
-//		//插入数据
-//		test.testinsert();
-//		//更新表数据
+		//插入数据
+		test.testinsert();
+		//更新表数据
 //		test.testUpdateTable();
 //		//删除表数据
 //		test.testdelete();
