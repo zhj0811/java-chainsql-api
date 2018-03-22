@@ -16,22 +16,31 @@ import com.peersafe.chainsql.net.Connection;
 
 public class EventManager {
 	public Connection connection;
-	public boolean onMessage;
+	public boolean onTbMessage;
+	public boolean onTxMessage;
 	public boolean onSubRet;
 	private HashMap<String,Callback> mapCache;
 	private HashMap<String,byte[]> mapPass;
 	public JSONObject result;
-
+	
+	private static EventManager single = new EventManager();
+	
+	private EventManager() {
+	}
+	
+	public static EventManager instance() {
+		return single;
+	}
 	/**
 	 * Constructor
 	 * @param connection connection object.
 	 */
-	public EventManager(Connection connection) {
-		super();
+	public void init(Connection connection) {
 		this.connection = connection;
 		this.mapCache = new HashMap<String,Callback>();
 		mapPass = new HashMap<String,byte[]>();
-		this.onMessage = false;
+		this.onTbMessage = false;
+		this.onTxMessage = false;
 		this.onSubRet = false;
 	}
 	
@@ -73,14 +82,14 @@ public class EventManager {
 	 * @param owner Table owner address.
 	 * @param cb Callback.
 	 */
-	public void subTable(String name, String owner ,Callback<?> cb) {
+	public void subscribeTable(String name, String owner ,Callback<?> cb) {
  		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("owner", owner);
 		messageTx.put("tablename", name);
 		this.connection.client.subscriptions.addMessage(messageTx);
 		
-		if (!this.onMessage) {
+		if (!this.onTbMessage) {
 			//this.connection.client.OnTBMessage(this::onTBMessage);
 			this.connection.client.OnTBMessage(new OnTBMessage(){
 				@Override
@@ -88,7 +97,7 @@ public class EventManager {
 					onTBMessage(args);
 				}
 			});
-			this.onMessage = true;
+			this.onTbMessage = true;
 		}
 		if(!this.onSubRet) {
 			onChainsqlSubRet();
@@ -102,20 +111,19 @@ public class EventManager {
 	 * @param id Transaction hash.
 	 * @param cb Callback.
 	 */
-	public void subTx(String id,Callback<?> cb) {
+	public void subscribeTx(String id,Callback<?> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "subscribe");
 		messageTx.put("transaction", id);
 		this.connection.client.subscriptions.addMessage(messageTx);
-		if (!this.onMessage) {
-//			this.connection.client.OnTXMessage(this::onTXMessage);
+		if (!this.onTxMessage) {
 			this.connection.client.OnTXMessage(new OnTXMessage(){
 				@Override
 				public void called(JSONObject args) {
 					onTXMessage(args);
 				}
 			});
-			this.onMessage = true;
+			this.onTxMessage = true;
 		}
 		if(!this.onSubRet) {
 			onChainsqlSubRet();
@@ -128,8 +136,9 @@ public class EventManager {
 	 * Un-subscribe a table.
 	 * @param name Table name.
 	 * @param owner Table owner address.
+	 * @param cb Callback.
 	 */
-	public void unsubTable(String name, String owner,Callback<JSONObject> cb) {
+	public void unsubscribeTable(String name, String owner,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("owner", owner);
@@ -143,7 +152,6 @@ public class EventManager {
 			obj.put("status", "success");
 			obj.put("result", "unsubscribe table success");
 			obj.put("type", "response");
-			
 			this.mapCache.remove(key);
 			this.mapPass.remove(key);
 		}else {
@@ -158,8 +166,9 @@ public class EventManager {
 	/**
 	 * Un-subscribe a transaction.
 	 * @param id Transaction hash.
+	 * @param cb Callback.
 	 */
-	public void unsubTx(String id,Callback<JSONObject> cb) {
+	public void unsubscribeTx(String id,Callback<JSONObject> cb) {
 		JSONObject messageTx = new JSONObject();
 		messageTx.put("command", "unsubscribe");
 		messageTx.put("transaction", id);

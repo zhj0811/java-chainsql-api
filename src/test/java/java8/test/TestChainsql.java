@@ -12,12 +12,16 @@ public class TestChainsql {
 	public static final Chainsql c = Chainsql.c;
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
+
+//	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+//	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
-	public static String rootAddress = "rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q";
-	public static String rootSecret = "ssnqAfDUjc6Bkevd1Xmz5dJS5yHdz";
+	public static String rootAddress = "z9VF7yQPLcKgUoHwMbzmQBjvPsyMy19ubs";
+	public static String rootSecret = "xxWFBu6veVgMnAqNf6YFRV2UENRd3";
 	
 	public static void main(String[] args) {
-		c.connect("ws://139.198.11.189:6006");
+		
+		c.connect("ws://101.201.40.124:5006");
 		
 		sTableName = "tTable1";
 		sTableName2 = "tTable2";
@@ -27,7 +31,7 @@ public class TestChainsql {
 		c.as(rootAddress, rootSecret);
 
 
-		testAccount();
+//		testAccount();
 		testChainSql();
 
 		c.disconnect();
@@ -37,24 +41,24 @@ public class TestChainsql {
 		TestChainsql test = new TestChainsql();
 		//建表
 		test.testCreateTable();
-		//建表，用于重命名，删除
-		test.testCreateTable1();
-		//插入数据
-		test.testinsert();
-		//更新表数据
-		test.testUpdateTable();
-		//删除表数据
-		test.testdelete();
-		//重命名表
-		test.testrename();
-		//查询表数据
-		test.testget();
-		//删除表
-		test.testdrop();
-		//授权
-		test.grant();
-		//授权后使用被授权账户插入数据
-		test.insertAfterGrant();
+//		//建表，用于重命名，删除
+//		test.testCreateTable1();
+//		//插入数据
+//		test.testinsert();
+//		//更新表数据
+//		test.testUpdateTable();
+//		//删除表数据
+//		test.testdelete();
+//		//重命名表
+//		test.testrename();
+//		//查询表数据
+//		test.testget();
+//		//删除表
+//		test.testdrop();
+//		//授权
+//		test.grant();
+//		//授权后使用被授权账户插入数据
+//		test.insertAfterGrant();
 	}
 	
 	private static void testAccount() {
@@ -76,7 +80,7 @@ public class TestChainsql {
 	public void generateAccount() {
 		JSONObject obj = c.generateAddress();
 		System.out.println("new account:" + obj);
-		sNewAccountId = obj.getString("account_id");
+		sNewAccountId = obj.getString("address");
 		sNewSecret = obj.getString("secret");
 	}
 
@@ -86,7 +90,7 @@ public class TestChainsql {
 	}
 	
 	public void getAccountBalance() {
-		String balance = c.getAccountBalance("rBuLBiHmssAMHWQMnEN7nXQXaVj7vhAv6Q");
+		String balance = c.getAccountBalance(rootAddress);
 		System.out.println(balance);
 	}
 	

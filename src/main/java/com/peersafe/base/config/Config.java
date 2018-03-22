@@ -95,13 +95,14 @@ public class Config {
 	public static boolean setUseGM(boolean useGM,boolean bNewKeyPair,String pin){
 		if(useGM){
 			newKeyPair_ = bNewKeyPair;
-			boolean bRet = SMDevice.openDevice();
-			if(!bRet)
-				return false;
-			bRet = SMDevice.verifyPin(pin);
-			if(bRet)
-				useSM_ = useGM;
-			return bRet;
+//			boolean bRet = SMDevice.openDevice();
+//			if(!bRet)
+//				return false;
+//			bRet = SMDevice.verifyPin(pin);
+//			if(bRet)
+//				useSM_ = useGM;
+//			return bRet;
+			return true;
 		}else{
 			useSM_ = useGM;
 			return true;

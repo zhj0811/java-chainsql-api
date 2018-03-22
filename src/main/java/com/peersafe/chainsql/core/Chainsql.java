@@ -39,7 +39,6 @@ import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
 public class Chainsql extends Submit {
-	public	EventManager event;
 
 	private JSONObject mTxJson;
 	
@@ -50,6 +49,8 @@ public class Chainsql extends Submit {
 	//reconnect callback when disconnected
 	private Callback<JSONObject> reconnectCb = null;
 	private Callback<JSONObject> reconnectedCB = null;
+	
+	public static EventManager event = EventManager.instance();
 	
 	/**
 	 * Assigning the operating user.
@@ -80,47 +81,89 @@ public class Chainsql extends Submit {
 	 * @return Connection object after connected.
 	 */
 	@SuppressWarnings("resource")
+	public Connection connect(String url) {
+		connection = new Connection().connect(url);
+		doWhenConnect();
+		return connection;
+	}
+
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @return Connection object after connected.
+	 */
+	public Connection connect(String url,final Callback<Client> connectCb) {
+		return connect(url,connectCb,null);
+	}
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @param disconnectCb callback when disconnected
+	 * @return Connection object after connected.
+	 */
+	@SuppressWarnings("resource")
 	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url);
+		EventManager.instance().init(this.connection);
 		connection.client.onConnected(new Client.OnConnected() {
 			@Override
 			public void called(Client args) {
 				connectCb.called(args);
 			}
 		});
-		connection.client.onDisconnected(new Client.OnDisconnected() {
-			@Override
-			public void called(Client args) {
-				disconnectCb.called(args);
-			}
-		});
+		if(disconnectCb != null) {
+			connection.client.onDisconnected(new Client.OnDisconnected() {
+				@Override
+				public void called(Client args) {
+					disconnectCb.called(args);
+				}
+			});	
+		}
 		
-//		doWhenConnect();
 		return connection;
 	}
 	/**
 	 * Connect to a secure websocket url.
-	 * @param wss url,e.g.:"ws://127.0.0.1:5006".
-	 * @param serverCertPath
-	 * @param storePass
-	 * @return
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath server certificate path
+	 * @param storePass password
+	 * @param connectCb callback when connected
+	 * @return Connection
+	 */
+	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb) {
+		return connect(url,serverCertPath,storePass,connectCb,null);
+	}
+	/**
+	 * Connect to a secure websocket url.
+	 * @param url url,e.g.:"ws://127.0.0.1:5006".
+	 * @param serverCertPath server certificate path
+	 * @param storePass password
+	 * @param connectCb callback when connected
+	 * @param disconnectCb callback when disconnected
+	 * @return Connection
 	 */
 	@SuppressWarnings("resource")
 	public Connection connect(String url,String serverCertPath,String storePass,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
 		connection = new Connection().connect(url,serverCertPath,storePass);
-//		doWhenConnect();
+		EventManager.instance().init(this.connection);
+
 		connection.client.onConnected(new Client.OnConnected() {
 			@Override
 			public void called(Client args) {
 				connectCb.called(args);
 			}
 		});
-		connection.client.onDisconnected(new Client.OnDisconnected() {
-			@Override
-			public void called(Client args) {
-				disconnectCb.called(args);
-			}
-		});
+		if(disconnectCb != null) {
+			connection.client.onDisconnected(new Client.OnDisconnected() {
+				@Override
+				public void called(Client args) {
+					disconnectCb.called(args);
+				}
+			});
+		}
+
 		return connection;
 	}
 	
@@ -133,7 +176,7 @@ public class Chainsql extends Submit {
 			}
 		}
 		System.out.println("connect success");
-		this.event = new EventManager(this.connection);
+		EventManager.instance().init(this.connection);
 		//jdk1.8
 //		this.connection.client.onReconnecting(this::onReconnecting);
 //		this.connection.client.onReconnected(this::onReconnected);
@@ -189,7 +232,7 @@ public class Chainsql extends Submit {
 		if(reconnectedCB != null){
 			reconnectedCB.called(cb);
 		}
-		event.reSubscribe();
+		EventManager.instance().reSubscribe();
 	}
 	/**
 	 * Disconnect the websocket connection.
@@ -212,7 +255,6 @@ public class Chainsql extends Submit {
 		    tab.mapToken = this.mapToken;
 		}
 		tab.strictMode = this.strictMode;
-		tab.event = this.event;
 		tab.connection = this.connection;
 		tab.setCrossChainArgs(this.crossChainArgs);
 		return tab;
@@ -220,7 +262,7 @@ public class Chainsql extends Submit {
 	
 	/**
 	 * use guomi algorithm
-	 * @param useGM 
+	 * @param useGM 是否使用国密
 	 * @param bNewKeyPair 是否生成新的公私钥对
 	 * @param pin default is '666666'
 	 * @throws Exception throws exception if failed.
@@ -238,7 +280,7 @@ public class Chainsql extends Submit {
 	/**
 	 * Sign a transaction.
 	 * @param tx transaction Json.
-	 * @param secret 
+	 * @param secret Secret used to sign
 	 * @return tx_blob and hash:
 	 * {
 	 * 	  "tx_blob":"xxxxx",
@@ -267,7 +309,7 @@ public class Chainsql extends Submit {
 	/**
 	 * sign for 
 	 * @param tx transaction Json.
-	 * @param secret
+	 * @param secret Secret used to sign
 	 * @return sign result form:
 	 {
 	    "Signer":{
@@ -347,7 +389,7 @@ public class Chainsql extends Submit {
 	    	JSONObject tx_json = Validate.tablePrepare(this.connection.client, mTxJson);
 	    	if(tx_json.getString("status").equals("error")){
 	    		//throw new Exception(tx_json.getString("error_message"));
-	    		System.out.println(tx_json.getString("error_message"));
+	    		//System.out.println(tx_json.getString("error_message"));
 	    		return tx_json;
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			
@@ -553,12 +595,13 @@ public class Chainsql extends Submit {
 		if(mapToken.containsKey(pair)){
 			token = mapToken.get(pair);
 		}else {
-			JSONObject res = Validate.getUserToken(connection,this.connection.address,name);
-			if(res.get("status").equals("error")){
+			JSONObject res = this.connection.client.getUserToken(this.connection.address,connection.address,name);
+			if(res.has("status") && res.get("status").equals("error")){
 				System.out.println(res.getString("error_message"));
 				return this;
 			}
-			token = res.getString("token");
+			if(res.has("token"))
+				token = res.getString("token");
 		}
 
 		String newToken = "";
@@ -782,28 +825,7 @@ public class Chainsql extends Submit {
 	 * @return LedgerVersion data
 	 */
 	public JSONObject getLedgerVersion(){
-		
-		mRetJson = null;
-		this.connection.client.getLedgerVersion(new Callback<JSONObject>(){
-			@Override
-			public void called(JSONObject data) {
-				if(data == null){
-					mRetJson = new JSONObject();
-				}else{
-					mRetJson = (JSONObject) data;
-				}
-			}
-		});
-		while(mRetJson == null){
-			Util.waiting();
-		}
-		
-		if(mRetJson.has("ledger_current_index")){
-			return mRetJson;
-		}else{
-			return null;
-		}
-		
+		return this.connection.client.getLedgerVersion();		
 	}
 	/**
 	 * Get newest validated ledger index,asynchronous.
@@ -938,8 +960,8 @@ public class Chainsql extends Submit {
 	 * Generate a new account.
 	 * @return Contains folling fields:
 	 * 		   secret:Account secret.
-	 * 		   account_id:Account address.
-	 * 		   public_key:Account publickey. 
+	 * 		   address:Account address.
+	 * 		   publicKey:Account publickey. 
 	 */
 	public JSONObject generateAddress(){
 		Security.addProvider(new BouncyCastleProvider());
@@ -989,7 +1011,7 @@ public class Chainsql extends Submit {
 	}
 	/**
 	 * Create validation key
-	 * @param count 
+	 * @param count Count to create.
 	 * @return JSONArray contains validation keys, each with a structue of {"seed":xxx,"publickey":xxx}
 	 */
 	public JSONArray validationCreate(int count){
@@ -1043,7 +1065,11 @@ public class Chainsql extends Submit {
 				String balance = request.response.result.optJSONObject("account_data").getString("Balance");
 				BigInteger bal = new BigInteger(balance);
 				BigInteger zxc = bal.divide(BigInteger.valueOf(1000000));
-				return zxc.toString();
+				BigInteger mod = bal.mod(BigInteger.valueOf(1000000));
+				String finalZxc = zxc.toString();
+				finalZxc += ".";
+				finalZxc += mod.toString();
+				return finalZxc;
 			}else {
 				return null;
 			}

@@ -42,15 +42,19 @@ public class Validate {
         return stArr;
     }
 	
-	public static JSONObject getUserToken(Connection connection,String owner, String name) {
-		Request request = connection.client.getUserToken(owner,connection.address,name);
-		return request.response.result;
-	}
-	
 	public static JSONObject tablePrepare(Client client, JSONObject tx_json) {
 		Request request = client.tablePrepare(tx_json);
-		return request.response.result;
-		
+		if(request.response.result != null)
+			return request.response.result;
+		else {
+			JSONObject obj = new JSONObject();
+			obj.put("status", request.response.status);
+			if(request.response.error_message != null)
+				obj.put("error_message", request.response.error_message);
+			else
+				obj.put("error_message", request.response.error);
+			return obj;
+		}		
 	}
 
 	public static Map<String,Object> rippleRes(Client client,AccountID account){
@@ -68,6 +72,7 @@ public class Validate {
     /**
      * Check fields
      * @param strraw Raw data list.
+     * @param name Table name
      * @throws Exception Throws when exception occur.
      */
 	public static void checkCreate(List<JSONObject> strraw,String name) throws Exception{

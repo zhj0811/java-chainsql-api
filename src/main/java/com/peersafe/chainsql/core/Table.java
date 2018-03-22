@@ -15,7 +15,6 @@ import com.peersafe.base.core.coretypes.AccountID;
 import com.peersafe.base.core.serialized.enums.TransactionType;
 import com.peersafe.base.core.types.known.tx.Transaction;
 import com.peersafe.chainsql.crypto.EncryptCommon;
-import com.peersafe.chainsql.util.EventManager;
 import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
@@ -24,8 +23,6 @@ public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-
-	public	EventManager event;
 
 	/**
 	 * Constructor for Table.
@@ -94,7 +91,7 @@ public class Table extends Submit{
 	}
 	/**
 	 * Select data from a table.
-	 * @param orgs Select parameters.
+	 * @param args Select parameters.
 	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table get(List<String> args){
@@ -147,6 +144,8 @@ public class Table extends Submit{
 	
 	/**
 	 * Assertion when sql-transaction begins.
+	 * @param orgs assert conditions.
+	 * @return Table object,can be used to operate Table continually.
 	 */
 	public Table sqlAssert(List<String> orgs){
 		for(String s: orgs){
@@ -218,11 +217,11 @@ public class Table extends Submit{
 			}
 		}
 		if(token.equals("") && !bFound){
-			JSONObject res = Validate.getUserToken(connection,connection.scope,name);
-			if(res.get("status").equals("error")){
+			JSONObject res = this.connection.client.getUserToken(this.connection.scope,connection.address,name);
+			if(res.has("status") && res.get("status").equals("error")){
 				if(!this.transaction)
 					System.out.println("Exception: "+res.getString("error_message"));
-			}else{
+			}else if(res.has("token")) {
 				token = res.getString("token");
 			}
 		}
