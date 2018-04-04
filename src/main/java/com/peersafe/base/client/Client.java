@@ -219,6 +219,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     private static final int MAX_REQUEST_COUNT = 10; 
     
     private ScheduledFuture reconnect_future = null;
+    
+    private boolean reconnecting = false;
     /**
      *  Constructor
      * @param ws Websocket implementation.
@@ -349,6 +351,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * Disconnect from websocket-url
      */
     public void disconnect() {
+        manuallyDisconnected = true;
     	disconnectInner();
         service.shutdownNow();
         connected = false;
@@ -356,7 +359,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     
     private void disconnectInner(){
-        manuallyDisconnected = true;
         ws.disconnect();
     }
 
@@ -402,21 +404,28 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
      * Reconnect when disconnected.
      */
     public void reconnect() {
+    	//make sure only one schedule task at the same time
+    	if(reconnecting) {
+    		return;
+    	}
+    	
+    	//sleep for 2 seconds first,because scheduleAtFixedRate execute immediately
+    	try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
     	emit(OnReconnecting.class,null);
     	
     	log(Level.INFO, "reconnecting");
     	disconnectInner();
+    	reconnecting = true;
     	reconnect_future = service.scheduleAtFixedRate(new Runnable(){
 			@Override
 			public void run() {
-				if(connected){
-					System.out.println("reconnected");
-					emit(OnReconnected.class,null);
-					reconnect_future.cancel(true);
-				}else{
-					disconnectInner();
-					doConnect(previousUri);
-				}
+				disconnectInner();
+				doConnect(previousUri);
 			}
         	
         }, 0,2000, TimeUnit.MILLISECONDS);
@@ -724,7 +733,15 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         logger.entering(getClass().getName(), "doOnConnected");
         connected = true;
         emit(OnConnected.class, this);
-
+        
+        //deal with reconnect
+        if(reconnecting) {
+        	reconnecting = false;
+			emit(OnReconnected.class,null);
+			reconnect_future.cancel(true);
+			reconnect_future = null;
+        }
+        
         subscribe(prepareSubscription());
         logger.exiting(getClass().getName(), "doOnConnected");
     }
