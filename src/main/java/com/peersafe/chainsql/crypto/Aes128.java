@@ -16,7 +16,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.peersafe.chainsql.util.Util;
 
-public class Aes {
+public class Aes128 {
 	private static final String KEY_ALGORITHM = "AES";  
 	
 	/**
@@ -89,7 +89,7 @@ public class Aes {
 	public static byte[] encrypt(byte[] password,byte[] byteContent) {  
         try {             
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// 创建密码器  
-            password = paddingPass(password);
+            password = Util.paddingPass(password,16);
             Key key = convertToKey(password);
             AlgorithmParameters algo = generateIV(password);
             cipher.init(Cipher.ENCRYPT_MODE, key, algo);// 初始化  
@@ -122,7 +122,7 @@ public class Aes {
 	 */  
 	public static byte[] decrypt(byte[] content, byte[] password) {  
         try {
-            password = paddingPass(password);              
+            password = Util.paddingPass(password,16);              
             Key key = convertToKey(password);
             AlgorithmParameters algo = generateIV(password);
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");// 创建密码器  
@@ -146,21 +146,5 @@ public class Aes {
         return null;  
 	}
 	
-	private static byte[] paddingPass(byte[] password){	     
-		byte[] retByte = new byte[16];
-		if(password.length < 16){
-			byte byteToPad = (byte) (16 - password.length);
-			for(int i=0; i<16; i++){
-				if(i<password.length)
-					retByte[i] = password[i];
-				else
-					retByte[i] = byteToPad;
-			}
-		}else{
-			for(int i=0; i<16; i++) {
-				retByte[i] = password[i];
-			}
-		}
-		return retByte;
-	}
+
 }
