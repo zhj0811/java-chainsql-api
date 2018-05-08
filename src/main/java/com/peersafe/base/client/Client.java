@@ -720,11 +720,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     		return;
         emitOnDisconnected();
 
-        if (!manuallyDisconnected) {
-        	reconnect();
-        } else {
-        	log(Level.INFO, "Currently disconnecting, so will not reconnect");
-        }
+//        if (!manuallyDisconnected) {
+//        	reconnect();
+//        } else {
+//        	log(Level.INFO, "Currently disconnecting, so will not reconnect");
+//        }
     }
 
     private void doOnConnected() {
