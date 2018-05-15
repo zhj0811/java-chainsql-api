@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.core.Chainsql;
-import com.peersafe.chainsql.core.Submit.SyncCond;
-import com.peersafe.chainsql.util.Util;
+import com.idac.idac.core.Chainsql;
+import com.idac.idac.core.Submit.SyncCond;
+import com.idac.idac.util.Util;
 
 public class TestChainsql {
 	public static final Chainsql c = Chainsql.c;

@@ -3,7 +3,7 @@ package java8.test;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.peersafe.chainsql.core.Chainsql;
+import com.idac.idac.core.Chainsql;
 
 public class TestSign {
 	public static final Chainsql c = Chainsql.c;
