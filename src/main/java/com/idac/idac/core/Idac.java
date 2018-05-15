@@ -38,7 +38,7 @@ import com.idac.idac.util.GenericPair;
 import com.idac.idac.util.Util;
 import com.idac.idac.util.Validate;
 
-public class Chainsql extends Submit {
+public class Idac extends Submit {
 
 	private JSONObject mTxJson;
 	
@@ -73,7 +73,7 @@ public class Chainsql extends Submit {
 		this.connection.scope = address;
 	}
 
-	public static final Chainsql c = new Chainsql();
+	public static final Idac c = new Idac();
 
 	/**
 	 * Connect to a websocket url.
@@ -418,7 +418,7 @@ public class Chainsql extends Submit {
 	 * @param raw  Option or conditions to create a table.
 	 * @return	You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql createTable(String name, List<String> raw) {
+	public Idac createTable(String name, List<String> raw) {
 		return createTable(name, raw , false);
 	}
 	
@@ -445,7 +445,7 @@ public class Chainsql extends Submit {
 		}"
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql createTable(String name, List<String> raw,JSONObject operationRule) {
+	public Idac createTable(String name, List<String> raw,JSONObject operationRule) {
 		return createTable(name, raw ,operationRule, false);
 	}
 	
@@ -456,11 +456,11 @@ public class Chainsql extends Submit {
 	 * @param confidential Table will be confidential or not.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql createTable(String name, List<String> rawList ,boolean confidential) {
+	public Idac createTable(String name, List<String> rawList ,boolean confidential) {
 		return createTable(name,rawList,null,confidential);
 	}
 	
-	private Chainsql createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
+	private Idac createTable(String name, List<String> rawList, JSONObject operationRule,boolean confidential) {
 		List<JSONObject> listRaw = Util.ListToJsonList(rawList);
 		try {
 			Validate.checkCreate(listRaw,name);
@@ -524,7 +524,7 @@ public class Chainsql extends Submit {
 	 * @param name Table name.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql recreateTable(String name){
+	public Idac recreateTable(String name){
 		JSONObject json = new JSONObject();
 		json.put("OpType", Constant.opType.get("t_recreate"));
 		json.put("Tables", getTableArray(name));
@@ -540,7 +540,7 @@ public class Chainsql extends Submit {
 	 * @param name Table name.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql dropTable(String name) {
+	public Idac dropTable(String name) {
 		JSONObject json = new JSONObject();
 		json.put("OpType", Constant.opType.get("t_drop"));
 		json.put("Tables", getTableArray(name));
@@ -558,7 +558,7 @@ public class Chainsql extends Submit {
 	 * @param newName New table name.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql renameTable(String oldName, String newName) {
+	public Idac renameTable(String oldName, String newName) {
 		if(newName == null || newName.isEmpty()) {
 			System.out.println("new table name can not be empty");
 			mTxJson = new JSONObject();
@@ -589,7 +589,7 @@ public class Chainsql extends Submit {
 	 * 			   the user can insert to this table,but cannot delete from this table.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql grant(String name, String user,String userPublicKey,String flag){
+	public Idac grant(String name, String user,String userPublicKey,String flag){
 		String token = "";
 		GenericPair<String,String> pair = new GenericPair<String,String>(this.connection.address,name);
 		if(mapToken.containsKey(pair)){
@@ -633,11 +633,11 @@ public class Chainsql extends Submit {
 	 * 			   the user can insert to this table,but cannot delete from this table.
 	 * @return You can use this to call other Chainsql functions continuely.
 	 */
-	public Chainsql grant(String name, String user,String flag) {
+	public Idac grant(String name, String user,String flag) {
 		return grant_inner(name,user,flag,"");
 	}
 
-	private Chainsql grant_inner(String name, String user,String flag,String token) {
+	private Idac grant_inner(String name, String user,String flag,String token) {
 		List<JSONObject> flags = new ArrayList<JSONObject>();
 		flags.add(Util.StrToJson(flag));
 		
@@ -707,7 +707,7 @@ public class Chainsql extends Submit {
 		return obj;
 	}
 	
-	public Chainsql report(){
+	public Idac report(){
 		this.mTxJson = new JSONObject();
 		this.mTxJson.put("OpType", Constant.opType.get("t_report"));
 //		this.txJson.put("Tables", new JSONArray());

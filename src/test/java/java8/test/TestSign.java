@@ -3,10 +3,10 @@ package java8.test;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.idac.idac.core.Chainsql;
+import com.idac.idac.core.Idac;
 
 public class TestSign {
-	public static final Chainsql c = Chainsql.c;
+	public static final Idac c = Idac.c;
 	public static void main(String[] args) {
 		testSignPayment();
 		testSignTrustSet();

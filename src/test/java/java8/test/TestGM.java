@@ -8,14 +8,14 @@ import org.json.JSONObject;
 import com.idac.base.client.requests.Request;
 import com.idac.base.core.coretypes.AccountID;
 import com.idac.base.crypto.sm.SMDevice;
-import com.idac.idac.core.Chainsql;
+import com.idac.idac.core.Idac;
 import com.idac.idac.core.Submit.SyncCond;
 import com.idac.idac.crypto.EncryptCommon;
 import com.idac.idac.util.Util;
 
 
 public class TestGM {
-	private static Chainsql c = Chainsql.c;
+	private static Idac c = Idac.c;
 	private static String sTableName = "HelloWorld";
 	public static void main(String[] args){
 		//设置包名
