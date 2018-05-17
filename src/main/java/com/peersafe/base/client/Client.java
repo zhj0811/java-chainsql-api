@@ -1198,7 +1198,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    		return request;
     }
     
-    public void accountInfo(AccountID account,Callback<JSONObject> cb) {
+    public void accountInfo(final AccountID account,final Callback<JSONObject> cb) {
     	makeManagedRequest(Command.account_info, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1396,7 +1396,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	}
    	 	}
     }
-    private void addCallback(Request request,Callback<Response> cb) {
+    private void addCallback(Request request,final Callback<Response> cb) {
 		request.once(Request.OnTimeout.class, new Request.OnTimeout() {
 		    @Override
 		    public void called(Response args) {
@@ -1664,7 +1664,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
     
-    public void requestBookOffers(Issue get, Issue pay,Callback<JSONObject> cb) {
+    public void requestBookOffers(final Issue get, final Issue pay,final Callback<JSONObject> cb) {
     	makeManagedRequest(Command.book_offers, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1701,7 +1701,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         waiting(request);
         return request;
     }
-    public void requestAccountOffers(AccountID accountID,Callback<JSONObject> cb) {
+    public void requestAccountOffers(final AccountID accountID,final Callback<JSONObject> cb) {
     	makeManagedRequest(Command.account_offers, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
@@ -1737,7 +1737,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return request;
     }
     
-    public void requestAccountLines(AccountID accountID,Callback<JSONObject> cb) {
+    public void requestAccountLines(final AccountID accountID,final Callback<JSONObject> cb) {
     	makeManagedRequest(Command.account_lines, new Manager<JSONObject>() {
             @Override
             public boolean retryOnUnsuccessful(Response r) {
