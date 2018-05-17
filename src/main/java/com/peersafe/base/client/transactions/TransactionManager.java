@@ -295,7 +295,14 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 
 	private void makeSubmitRequest(final ManagedTxn txn, final UInt32 sequence) {
 		if (canSubmit()) {
-			doSubmitRequest(txn, sequence);
+			Request req = doSubmitRequest(txn, sequence);
+			// add time out callback to ManagedTxn
+			req.once(Request.OnTimeout.class, new Request.OnTimeout() {
+	            @Override
+	            public void called(Response args) {
+	            	txn.emit(ManagedTxn.OnTimeOut.class,args);
+	            }
+	        });
 		} else {
 			// If we have submitted again, before this gets to execute
 			// we should just bail out early, and not submit again.

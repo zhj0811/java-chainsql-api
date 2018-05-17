@@ -15,7 +15,7 @@ import com.peersafe.base.client.responses.Response;
 public class Request extends Publisher<Request.events> {
     // com.peersafe.base.client.requests.Request // ??
     public static final Logger logger = Logger.getLogger(Request.class.getName());
-    public static final long TIME_OUT = 120000;
+    public static long TIME_OUT = 120000;
     static public final int VALIDATED_LEDGER = -3;
     static public final int CLOSED_LEDGER = -2;
     static public final int OPEN_LEDGER = -1;
@@ -71,6 +71,9 @@ public class Request extends Publisher<Request.events> {
         json("id",      assignedId);
     }
 
+    public static void setTimeOut(int milliSeconds) {
+    	TIME_OUT = milliSeconds;
+    }
     /**
      * Get json.
      * @return json value.

@@ -34,6 +34,7 @@ import com.peersafe.base.client.subscriptions.SubscriptionManager;
 import com.peersafe.base.client.subscriptions.TrackedAccountRoot;
 import com.peersafe.base.client.subscriptions.TransactionSubscriptionManager;
 import com.peersafe.base.client.transactions.AccountTxPager;
+import com.peersafe.base.client.transactions.ManagedTxn;
 import com.peersafe.base.client.transactions.TransactionManager;
 import com.peersafe.base.client.transport.TransportEventHandler;
 import com.peersafe.base.client.transport.WebSocketTransport;
@@ -999,11 +1000,11 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             @Override
             public void called(Response args) {
             	System.out.println("timeout");
-                if (!responded[0] && manager.retryOnUnsuccessful(null)) {
-                    logRetry(request, "Request timed out");
-                    request.clearAllListeners();
-                    queueRetry(50, cmd, manager, builder,depth);
-                }
+//                if (!responded[0] && manager.retryOnUnsuccessful(null)) {
+//                    logRetry(request, "Request timed out");
+//                    request.clearAllListeners();
+//                    queueRetry(50, cmd, manager, builder,depth);
+//                }
             }
         });
         final OnDisconnected cb = new OnDisconnected() {
@@ -1197,18 +1198,30 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
    		return request;
     }
     
-    /**
-     * 
-     * @param messageTx Message Transaction.
-     * @return Request data.
-     */
-    public Request messageTx(JSONObject messageTx){
-    	 Request request = newRequest(Command.subscribe);
-    	 request.json("tx_json", messageTx);
-         request.request();
-         waiting(request);
-         return request;
+    public void accountInfo(AccountID account,Callback<JSONObject> cb) {
+    	makeManagedRequest(Command.account_info, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("account", account.address);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
     }
+    
     
     /**
      * Select data from chain.
@@ -1383,6 +1396,14 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         	}
    	 	}
     }
+    private void addCallback(Request request,Callback<Response> cb) {
+		request.once(Request.OnTimeout.class, new Request.OnTimeout() {
+		    @Override
+		    public void called(Response args) {
+		    	cb.called(args);
+		    }
+		});
+    }
     
     private JSONObject getResult(Response response) {
     	if(response != null) {
@@ -1397,6 +1418,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 	    waiting(request);
 	    return getResult(request.response);
     }
+   
     
     /**
      * Get transaction count on chain.
@@ -1641,6 +1663,31 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         waiting(request);
         return request;
     }
+    
+    public void requestBookOffers(Issue get, Issue pay,Callback<JSONObject> cb) {
+    	makeManagedRequest(Command.book_offers, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+                request.json("taker_gets", get.toJSON());
+                request.json("taker_pays", pay.toJSON());
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
+    }
 
     /**
     * Request for account offers
@@ -1654,7 +1701,29 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         waiting(request);
         return request;
     }
+    public void requestAccountOffers(AccountID accountID,Callback<JSONObject> cb) {
+    	makeManagedRequest(Command.account_offers, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
 
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("account", accountID.address);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
+    }
     /**
     * Request for accountline
     * @param accountID
@@ -1666,5 +1735,29 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         request.request();
         waiting(request);
         return request;
+    }
+    
+    public void requestAccountLines(AccountID accountID,Callback<JSONObject> cb) {
+    	makeManagedRequest(Command.account_lines, new Manager<JSONObject>() {
+            @Override
+            public boolean retryOnUnsuccessful(Response r) {
+            	return false;
+            }
+
+            @Override
+            public void cb(Response response, JSONObject jsonObject) throws JSONException {
+            	cb.called(jsonObject);
+            }
+        }, new Request.Builder<JSONObject>() {
+            @Override
+            public void beforeRequest(Request request) {
+            	request.json("account", accountID.address);
+            }
+
+            @Override
+            public JSONObject buildTypedResponse(Response response) {
+                return response.result;
+            }
+        });
     }
 }

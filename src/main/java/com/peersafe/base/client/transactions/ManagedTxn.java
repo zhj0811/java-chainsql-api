@@ -22,7 +22,8 @@ public class ManagedTxn extends SignedTransaction {
     public static interface OnSubmitFailure extends events<Response> {}
     public static interface OnSubmitError extends events<Response> {}
     public static interface OnTransactionValidated extends events<TransactionResult> {}
-
+    public static interface OnTimeOut extends events<Response>{}
+    
     public TransactionResult result;
 
     /**
@@ -49,6 +50,11 @@ public class ManagedTxn extends SignedTransaction {
     public ManagedTxn onSubmitSuccess(OnSubmitSuccess cb){
         on(OnSubmitSuccess.class, cb);
         return this;
+    }
+    
+    public ManagedTxn onTimeOut(OnTimeOut cb) {
+    	on(OnTimeOut.class,cb);
+    	return this;
     }
 
     /**
