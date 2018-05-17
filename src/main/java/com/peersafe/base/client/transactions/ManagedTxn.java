@@ -22,7 +22,7 @@ public class ManagedTxn extends SignedTransaction {
     public static interface OnSubmitFailure extends events<Response> {}
     public static interface OnSubmitError extends events<Response> {}
     public static interface OnTransactionValidated extends events<TransactionResult> {}
-    public static interface OnTimeOut extends events<Response>{}
+    public static interface OnTimeOut extends events<Request>{}
     
     public TransactionResult result;
 

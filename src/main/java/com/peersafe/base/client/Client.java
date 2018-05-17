@@ -232,8 +232,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
         prepareExecutor();
         // requires executor, so call after prepareExecutor
-        // 屏蔽掉重连机制，由上层来控制
-        // scheduleMaintenance();
+         scheduleMaintenance();
 
         subscriptions.on(SubscriptionManager.OnSubscribed.class, new SubscriptionManager.OnSubscribed() {
             @Override
@@ -382,18 +381,20 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             public void run() {
                 try {
                     manageTimedOutRequests();
-                    int defaultValue = -1;
 
-                    if (!manuallyDisconnected) {
-                        if (connected && lastConnection != defaultValue) {
-                            long time = new Date().getTime();
-                            long msSince = time - lastConnection;
-                            if (msSince > reconnectDormantAfter) {
-                                lastConnection = defaultValue;
-                                reconnect();
-                            }
-                        }
-                    }
+                    // 屏蔽掉重连机制，由上层来控制
+//                    int defaultValue = -1;
+//
+//                    if (!manuallyDisconnected) {
+//                        if (connected && lastConnection != defaultValue) {
+//                            long time = new Date().getTime();
+//                            long msSince = time - lastConnection;
+//                            if (msSince > reconnectDormantAfter) {
+//                                lastConnection = defaultValue;
+//                                reconnect();
+//                            }
+//                        }
+//                    }
                 } finally {
                     scheduleMaintenance();
                 }
@@ -445,7 +446,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
             }
         }
         for (Request request : timedOut) {
-            request.emit(Request.OnTimeout.class, request.response);
+            request.emit(Request.OnTimeout.class, request);
             requests.remove(request.id);
         }
     }
@@ -998,7 +999,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         final boolean[] responded = new boolean[]{false};
         request.once(Request.OnTimeout.class, new Request.OnTimeout() {
             @Override
-            public void called(Response args) {
+            public void called(Request args) {
             	System.out.println("timeout");
 //                if (!responded[0] && manager.retryOnUnsuccessful(null)) {
 //                    logRetry(request, "Request timed out");
@@ -1395,14 +1396,6 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         		break;
         	}
    	 	}
-    }
-    private void addCallback(Request request,final Callback<Response> cb) {
-		request.once(Request.OnTimeout.class, new Request.OnTimeout() {
-		    @Override
-		    public void called(Response args) {
-		    	cb.called(args);
-		    }
-		});
     }
     
     private JSONObject getResult(Response response) {

@@ -154,7 +154,14 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 				handleSubmitError(txn, response);
 			}
 		});
-
+		
+		// add time out callback to ManagedTxn
+		req.once(Request.OnTimeout.class, new Request.OnTimeout() {
+            @Override
+            public void called(Request args) {
+            	txn.emit(ManagedTxn.OnTimeOut.class,args);
+            }
+        });
 		// Keep track of the submission, including the hash submitted
 		// to the network, and the ledger_index at that point in time.
 		txn.trackSubmitRequest(req, client.serverInfo.ledger_index);
@@ -295,14 +302,7 @@ public class TransactionManager extends Publisher<TransactionManager.events> {
 
 	private void makeSubmitRequest(final ManagedTxn txn, final UInt32 sequence) {
 		if (canSubmit()) {
-			Request req = doSubmitRequest(txn, sequence);
-			// add time out callback to ManagedTxn
-			req.once(Request.OnTimeout.class, new Request.OnTimeout() {
-	            @Override
-	            public void called(Response args) {
-	            	txn.emit(ManagedTxn.OnTimeOut.class,args);
-	            }
-	        });
+			doSubmitRequest(txn, sequence);
 		} else {
 			// If we have submitted again, before this gets to execute
 			// we should just bail out early, and not submit again.

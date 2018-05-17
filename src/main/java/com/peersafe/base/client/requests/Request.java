@@ -38,7 +38,7 @@ public class Request extends Publisher<Request.events> {
     public static interface OnSuccess  extends events<Response> {}
     public static interface OnError    extends events<Response> {}
     public static interface OnResponse extends events<Response> {}
-    public static interface OnTimeout   extends events<Response> {}
+    public static interface OnTimeout   extends events<Request> {}
 
     public static abstract class Manager<T> {
         abstract public void cb(Response response, T t) throws JSONException;
