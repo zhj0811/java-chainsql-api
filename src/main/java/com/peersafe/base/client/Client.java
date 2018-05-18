@@ -197,6 +197,8 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
 
     // Every x ms, we clean up timed out requests
     public long maintenanceSchedule = 10000; //ms
+    
+    private long requestTimeOut = 5000;
 
     public int SEQUENCE;
     
@@ -250,6 +252,12 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         return 2000;
     }
 
+    /**
+     * set timeout for waiting
+     */
+    public void setTimeOut(long milli) {
+    	requestTimeOut = milli;
+    }
     /**
      * 
      * @param transactionSubscriptionManager Subscribe manager.
@@ -1389,7 +1397,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         });
     }
     private void waiting(Request request){
-        int count = 50;
+        int count = (int)requestTimeOut/100;
         while(request.response==null){
         	Util.waiting(); 
         	if(--count == 0){
