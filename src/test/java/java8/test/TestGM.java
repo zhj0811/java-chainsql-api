@@ -5,17 +5,17 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.idac.base.client.requests.Request;
-import com.idac.base.core.coretypes.AccountID;
-import com.idac.base.crypto.sm.SMDevice;
-import com.idac.idac.core.Idac;
-import com.idac.idac.core.Submit.SyncCond;
-import com.idac.idac.crypto.EncryptCommon;
-import com.idac.idac.util.Util;
+import com.dac.base.client.requests.Request;
+import com.dac.base.core.coretypes.AccountID;
+import com.dac.base.crypto.sm.SMDevice;
+import com.dac.dac.core.Dac;
+import com.dac.dac.core.Submit.SyncCond;
+import com.dac.dac.crypto.EncryptCommon;
+import com.dac.dac.util.Util;
 
 
 public class TestGM {
-	private static Idac c = Idac.c;
+	private static Dac c = Dac.c;
 	private static String sTableName = "HelloWorld";
 	public static void main(String[] args){
 		//设置包名
@@ -43,7 +43,7 @@ public class TestGM {
 		btn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Chainsql c = Chainsql.c;
+				Dac c = Dac.c;
 				try {
 					JSONObject obj = c.generateAddress();
 					if (obj != null) {
@@ -112,7 +112,7 @@ public class TestGM {
 		
 		JSONObject obj = new JSONObject();
 		JSONObject tx_json = new JSONObject();
-		Chainsql c = Chainsql.c;
+		Dac c = Dac.c;
 		String tx_blob = "";
 		try{
 			AccountID account = AccountID.fromAddress("rwCThrZYQEmiXwr2Jzfi9vNfbHq565oJk5");
@@ -150,7 +150,7 @@ public class TestGM {
 	}
 	
 	private void testChainsql(){
-		Chainsql c = Chainsql.c;
+		Dac c = Dac.c;
 		try {
 			JSONObject address = c.generateAddress();
 			c.as(address.getString("account_id"), "");

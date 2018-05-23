@@ -4,12 +4,12 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.idac.idac.core.Idac;
-import com.idac.idac.core.Submit.SyncCond;
-import com.idac.idac.util.Util;
+import com.dac.dac.core.Dac;
+import com.dac.dac.core.Submit.SyncCond;
+import com.dac.dac.util.Util;
 
 public class TestChainsql {
-	public static final Idac c = Idac.c;
+	public static final Dac c = Dac.c;
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
 

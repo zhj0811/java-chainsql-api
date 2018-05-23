@@ -2,7 +2,7 @@ package java8.test;
 
 import java.math.BigInteger;
 
-import com.idac.base.ilp.IlpInterface;
+import com.dac.base.ilp.IlpInterface;
 
 public class TestIlp {
 	

@@ -3,10 +3,10 @@ package java8.test;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.idac.idac.core.Idac;
+import com.dac.dac.core.Dac;
 
 public class TestSign {
-	public static final Idac c = Idac.c;
+	public static final Dac c = Dac.c;
 	public static void main(String[] args) {
 		testSignPayment();
 		testSignTrustSet();

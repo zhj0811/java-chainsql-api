@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.idac</groupId>
-	<artifactId>idac</artifactId>
+	<groupId>com.dac</groupId>
+	<artifactId>dac</artifactId>
 	<version>1.4.2</version>
 	<packaging>jar</packaging>
-	<name>ChainSQL JAVA API</name>
-	<url>https://github.com/idac/java-idac-api</url>
-	<description>ChainSQL JAVA API is an api for idac server</description>
+	<name>Dac JAVA API</name>
+	<url>https://github.com/dac/java-dac-api</url>
+	<description>Dac JAVA API is an api for dac server</description>
 	
 	<licenses>
     <license>
@@ -17,8 +17,8 @@
 	</licenses>
 	<developers>
 	    <developer>
-	        <name>idac</name>
-	        <email>lujinglei@idac.cn</email>
+	        <name>dac</name>
+	        <email>lujinglei@dac.cn</email>
 	        <roles>
 	            <role>developer</role>
 	        </roles>
@@ -26,9 +26,9 @@
 	    </developer>
 	</developers>
 	<scm>
-	    <connection>scm:git:https://github.com/idac/java-idac-api.git</connection>
-	    <developerConnection>scm:git:https://github.com/idac/java-idac-api.git</developerConnection>
-	    <url>https://github.com/idac/java-idac-api.git</url>
+	    <connection>scm:git:https://github.com/dac/java-dac-api.git</connection>
+	    <developerConnection>scm:git:https://github.com/dac/java-dac-api.git</developerConnection>
+	    <url>https://github.com/dac/java-dac-api.git</url>
 	    <tag>v${project.version}</tag>
 	</scm>
 
