@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.dac</groupId>
 	<artifactId>dac</artifactId>
-	<version>1.4.2</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 	<name>Dac JAVA API</name>
 	<url>https://github.com/dac/java-dac-api</url>
@@ -18,7 +18,7 @@
 	<developers>
 	    <developer>
 	        <name>dac</name>
-	        <email>lujinglei@dac.cn</email>
+	        <email>linktech@dac.cn</email>
 	        <roles>
 	            <role>developer</role>
 	        </roles>
