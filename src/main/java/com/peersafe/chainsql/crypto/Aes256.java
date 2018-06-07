@@ -1,15 +1,8 @@
 package com.peersafe.chainsql.crypto;
 
 import java.security.Security;
-import java.util.Random;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.crypto.BufferedBlockCipher;
-import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
@@ -17,7 +10,6 @@ import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import com.peersafe.base.utils.Sha512;
 import com.peersafe.chainsql.util.Util;  
   
 public class Aes256 {  
@@ -41,8 +33,14 @@ public class Aes256 {
 	        cipher.init(bEncrypt, keyWithIv);        
 	        byte[] cryptedBytes  = new byte[cipher.getOutputSize(bytes.length)];
 	        int length1 = cipher.processBytes(bytes, 0, bytes.length, cryptedBytes , 0);	        
-	        cipher.doFinal(cryptedBytes , length1);
-	        return cryptedBytes;
+	        int length2 = cipher.doFinal(cryptedBytes , length1);
+	        byte[] finalBytes = cryptedBytes;
+	        int finalLength = length1+length2;
+	        if(!bEncrypt && finalLength != cryptedBytes.length) {
+	        	finalBytes = new byte[finalLength];
+	        	System.arraycopy(cryptedBytes, 0, finalBytes, 0, finalLength);
+	        }
+	        return finalBytes;
 		}catch(Exception e){
 			e.printStackTrace();
 		}
