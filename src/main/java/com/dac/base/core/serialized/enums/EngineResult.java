@@ -50,6 +50,9 @@ public enum EngineResult implements SerializedType
 
     temUNCERTAIN (-272, "In process of determining result. Never returned."),
     temUNKNOWN (-271, "The transactions requires logic not implemented yet."),
+	temBAD_TRANSFERFEE_BOTH(-269,"TransferFeeMin and TransferFeeMax can not be set individually."),
+	temBAD_TRANSFERFEE(-268,"TransferFeeMin or TransferMax invalid."),
+	temBAD_FEE_MISMATCH_TRANSFER_RATE(-267,"TransferRate mismatch with TransferFeeMin or TransferFeeMax."),
 
     tefFAILURE (-199, "Failed to apply."),
     tefALREADY (-198, "The exact transaction was already in this ledger."),
