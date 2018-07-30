@@ -14,6 +14,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.peersafe.base.client.Client;
 import com.peersafe.base.client.Client.OnReconnected;
 import com.peersafe.base.client.Client.OnReconnecting;
 import com.peersafe.base.client.pubsub.Publisher.Callback;
@@ -96,6 +97,43 @@ public class Chainsql extends Submit {
 		connection = new Connection().connect(url,serverCertPath,storePass);
 		doWhenConnect();
 		return connection;
+	}
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @param disconnectCb callback when disconnected
+	 * @return Connection object after connected.
+	 */
+	@SuppressWarnings("resource")
+	public Connection connect(String url,final Callback<Client> connectCb,final Callback<Client> disconnectCb) {
+		connection = new Connection().connect(url);
+		this.event = new EventManager(this.connection);
+		connection.client.onConnected(new Client.OnConnected() {
+			@Override
+			public void called(Client args) {
+				connectCb.called(args);
+			}
+		});
+		if(disconnectCb != null) {
+			connection.client.onDisconnected(new Client.OnDisconnected() {
+				@Override
+				public void called(Client args) {
+					disconnectCb.called(args);
+				}
+			});	
+		}
+		
+		return connection;
+	}
+	/**
+	 * Connect to a websocket url.
+	 * @param url Websocket url to connect,e.g.:"ws://127.0.0.1:5006".
+	 * @param connectCb callback when connected
+	 * @return Connection object after connected.
+	 */
+	public Connection connect(String url,final Callback<Client> connectCb) {
+		return connect(url,connectCb,null);
 	}
 	
 	private void doWhenConnect(){
@@ -325,7 +363,6 @@ public class Chainsql extends Submit {
 	    	}else{
 	    		tx_json = tx_json.getJSONObject("tx_json");	    			
 	    	}
-	    	
 	    	Transaction payment;
 	    	if(this.transaction){
 	    		tx_json.put("Statements", Util.toHexString(tx_json.getJSONArray("Statements").toString()));
@@ -335,7 +372,6 @@ public class Chainsql extends Submit {
 	    	}
 			
 			signed = payment.sign(this.connection.secret);
-			
 			return Util.successObject();
 		} catch (Exception e) {
 //			e.printStackTrace();

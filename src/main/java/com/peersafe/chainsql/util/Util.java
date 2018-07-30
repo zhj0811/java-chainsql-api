@@ -169,19 +169,19 @@ public class Util {
 	 * @param tx JSONObject to be unhexed.
 	 */
 	public static void unHexData(JSONObject tx){
-		String sTableName = "";
-		if(tx.has("Tables")){
-			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
-			table = table.getJSONObject("Table");
-			sTableName = fromHexString(table.getString("TableName"));
-			table.put("TableName", sTableName);
-			if(table.has("TableNewName")){
-				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
-			}
-		}
+//		String sTableName = "";
+//		if(tx.has("Tables")){
+//			JSONObject table = (JSONObject)tx.getJSONArray("Tables").get(0);
+//			table = table.getJSONObject("Table");
+//			sTableName = fromHexString(table.getString("TableName"));
+//			table.put("TableName", sTableName);
+//			if(table.has("TableNewName")){
+//				table.put("TableNewName", fromHexString(table.getString("TableNewName")));
+//			}
+//		}
 		if(tx.has("Raw")){
 			String sRaw = fromHexString(tx.getString("Raw"));		
-			tx.put("Raw", sRaw);
+			tx.put("RawOriginal", sRaw);
 		}
 
 		if(tx.has("Statements")){

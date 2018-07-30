@@ -1150,16 +1150,29 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     }
     
     /**
-     * 
-     * @param messageTx Message Transaction.
+     * Request for random information.
      * @return Request data.
      */
-    public Request messageTx(JSONObject messageTx){
-    	 Request request = newRequest(Command.subscribe);
-    	 request.json("tx_json", messageTx);
-         request.request();
-         waiting(request);
-         return request;
+    public Request createRandom() {
+        Request request = newRequest(Command.g_createrandom);
+
+        request.request();
+        waiting(request);
+   		return request;
+    }
+    
+    /**
+     * Request for random information.
+     * @return Request data.
+     */
+    public Request getCryptData(int algo_type,int set_count,int data_len) {
+        Request request = newRequest(Command.g_cryptdata);
+        request.json("alg_type", algo_type);
+        request.json("data_set_count", algo_type);
+        request.json("plain_data_len", data_len);
+        request.request();
+        waiting(request);
+   		return request;
     }
     
     /**

@@ -63,5 +63,7 @@ public enum Command {
     validation_seed,
     wallet_accounts,
     wallet_propose,
-    wallet_seed
+    wallet_seed,
+    g_createrandom,
+    g_cryptdata
 }
