@@ -1168,7 +1168,7 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
     public Request getCryptData(int algo_type,int set_count,int data_len) {
         Request request = newRequest(Command.g_cryptdata);
         request.json("alg_type", algo_type);
-        request.json("data_set_count", algo_type);
+        request.json("data_set_count", set_count);
         request.json("plain_data_len", data_len);
         request.request();
         waiting(request);
