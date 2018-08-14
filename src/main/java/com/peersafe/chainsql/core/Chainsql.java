@@ -6,7 +6,9 @@ import java.math.BigInteger;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +58,8 @@ public class Chainsql extends Submit {
 	private Callback<JSONObject> reconnectedCB = null;
 	
 	public static EventManager event = EventManager.instance();
+	
+	Map<String,Table> mTableCache = new HashMap<String,Table>();
 	
 	/**
 	 * Assigning the operating user.
@@ -265,16 +269,21 @@ public class Chainsql extends Submit {
 	 * @return Table object.
 	 */
 	public Table table(String name) {
-		Table tab = new Table(name);
-		 if (this.transaction) {
-		   	tab.transaction = this.transaction;
-		    tab.cache = this.cache;
-		    tab.mapToken = this.mapToken;
+		if(mTableCache.containsKey(name)) {
+			return mTableCache.get(name);
+		}else {
+			Table tab = new Table(name);
+			 if (this.transaction) {
+			   	tab.transaction = this.transaction;
+			    tab.cache = this.cache;
+			    tab.mapToken = this.mapToken;
+			}
+			tab.strictMode = this.strictMode;
+			tab.connection = this.connection;
+			tab.setCrossChainArgs(this.crossChainArgs);
+			mTableCache.put(name, tab);
+			return tab;
 		}
-		tab.strictMode = this.strictMode;
-		tab.connection = this.connection;
-		tab.setCrossChainArgs(this.crossChainArgs);
-		return tab;
 	}
 	
 	/**
@@ -798,7 +807,7 @@ public class Chainsql extends Submit {
 		return null;
 	}
 	
-	private JSONObject getTransactionCount(){
+	public JSONObject getTransactionCount(){
 		return connection.client.getTransactionCount();
 	}
 	
@@ -1095,6 +1104,10 @@ public class Chainsql extends Submit {
 	 */
 	public JSONObject getUnlList(){
 		return connection.client.getUnlList();
+	}
+	
+	public JSONObject getPeers() {
+		return connection.client.getPeers();
 	}
 	
 	public Connection getConnection() {

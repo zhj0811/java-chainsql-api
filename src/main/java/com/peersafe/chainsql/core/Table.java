@@ -23,6 +23,7 @@ public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
+	private String tx_hash_field;
 
 	/**
 	 * Constructor for Table.
@@ -52,6 +53,10 @@ public class Table extends Submit{
 	    this.exec = "r_insert";
 	    return dealWithTransaction();
 		
+	}
+	
+	public void setTxHashField(String field) {
+		tx_hash_field = field;
 	}
 	
 	/**
@@ -203,6 +208,9 @@ public class Table extends Submit{
 		json.put("Raw", tryEncryptRaw(this.query.toString()));
 		json.put("OpType",Validate.toOpType(this.exec));
 		json.put("StrictMode", this.strictMode);
+		if(!tx_hash_field.isEmpty()) {
+			json.put("AutoFillField", Util.toHexString(tx_hash_field));
+		}
 		return json;
 	}
 	

@@ -1440,6 +1440,13 @@ public class Client extends Publisher<Client.events> implements TransportEventHa
         waiting(request);
         return getResult(request.response);
     }
+    
+    public JSONObject getPeers() {
+    	Request request = newRequest(Command.peers);
+        request.request();
+        waiting(request);
+        return getResult(request.response);
+    }
     /**
      * Get user_token for table,if token got not null, it is a confidential table.
      * @param owner Table's owner/creator.

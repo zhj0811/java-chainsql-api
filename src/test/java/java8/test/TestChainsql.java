@@ -17,7 +17,8 @@ public class TestChainsql {
 	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
 	public static void main(String[] args) {
-		c.connect("ws://139.198.11.189:6006");
+//		c.connect("ws://101.201.40.124:5006");
+		c.connect("ws://10.100.0.90:6006");
 		
 		sTableName = "tTable1";
 		sTableName2 = "tTable2";
@@ -27,34 +28,41 @@ public class TestChainsql {
 		c.as(rootAddress, rootSecret);
 
 
-		testAccount();
+//		testAccount();
 		testChainSql();
+//		testRipple();
 
 		c.disconnect();
 	}
 	
+//	private static void testRipple() {
+//		JSONObject obj = c.getLedger(14075);
+//		System.out.println(obj);
+//		
+//	}
+
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
 		//建表
-		test.testCreateTable();
-		//建表，用于重命名，删除
-		test.testCreateTable1();
+//		test.testCreateTable();
+//		//建表，用于重命名，删除
+//		test.testCreateTable1();
 		//插入数据
 		test.testinsert();
-		//更新表数据
-		test.testUpdateTable();
-		//删除表数据
-		test.testdelete();
-		//重命名表
-		test.testrename();
-		//查询表数据
-		test.testget();
-		//删除表
-		test.testdrop();
-		//授权
-		test.grant();
-		//授权后使用被授权账户插入数据
-		test.insertAfterGrant();
+//		//更新表数据
+//		test.testUpdateTable();
+//		//删除表数据
+//		test.testdelete();
+//		//重命名表
+//		test.testrename();
+//		//查询表数据
+//		test.testget();
+//		//删除表
+//		test.testdrop();
+//		//授权
+//		test.grant();
+//		//授权后使用被授权账户插入数据
+//		test.insertAfterGrant();
 	}
 	
 	private static void testAccount() {
@@ -143,16 +151,19 @@ public class TestChainsql {
 	}
 
 	public void testCreateTable() {
-		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'UQ':1,'AI':1}",
+				"{'field':'name','type':'varchar','length':50,'default':null}", 
+				"{'field':'age','type':'int'}",
+				"{'field':'tx_hash','type':'varchar','length':64}");
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
 		System.out.println("create result:" + obj);
 	}
 
 	public void testinsert() {
-		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}");
 		JSONObject obj;
+		c.table(sTableName).setTxHashField("tx_hash");
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert result:" + obj);
 	}
