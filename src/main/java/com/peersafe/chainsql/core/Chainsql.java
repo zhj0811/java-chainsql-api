@@ -38,6 +38,8 @@ import com.peersafe.chainsql.util.GenericPair;
 import com.peersafe.chainsql.util.Util;
 import com.peersafe.chainsql.util.Validate;
 
+import cn.com.sansec.key.SWJAPI;
+
 public class Chainsql extends Submit {
 	public	EventManager event;
 
@@ -1119,5 +1121,16 @@ public class Chainsql extends Submit {
 	public String decrypt(String cipher,String secret) {
 		byte[] cipherBytes = Util.hexToBytes(cipher);
 		return Ecies.decryptText(cipherBytes, secret);
+	}
+	
+	/**
+	 * 设置安卓参数
+	 * @param version 安卓系统版本
+	 * @param packageName MainActivity所在包名
+	 */
+	public void setAndroidParam(int version,String packageName) {
+		if (version >= 19) {
+			SWJAPI.setPackageName(packageName);
+		}
 	}
 }
