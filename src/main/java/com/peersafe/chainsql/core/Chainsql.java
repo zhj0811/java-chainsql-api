@@ -1133,4 +1133,30 @@ public class Chainsql extends Submit {
 			SWJAPI.setPackageName(packageName);
 		}
 	}
+	
+	public static void main(String [] args) {
+		byte[] pubBytes = getB58IdentiferCodecs().decode("pYvah14uZs8RZBHoSkK1gwFwQiDmHQhC9FadYyH5132eXyHSJqT1vAF8rpE57C7tSQtNC6Uw8MJ2EhnWkaiZYA454d1d3WWc",
+				B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		byte[] o;
+		{
+			SHA256Digest sha = new SHA256Digest();
+			sha.update(pubBytes, 0, pubBytes.length);
+		    byte[] result = new byte[sha.getDigestSize()];
+		    sha.doFinal(result, 0);
+		    
+			RIPEMD160Digest d = new RIPEMD160Digest();
+		    d.update (result, 0, result.length);
+		    o = new byte[d.getDigestSize()];
+		    d.doFinal (o, 0);
+		}
+		
+		String publicKey = getB58IdentiferCodecs().encode(pubBytes, B58IdentiferCodecs.VER_ACCOUNT_PUBLIC);
+		String address = getB58IdentiferCodecs().encodeAddress(o);
+		
+		System.out.println(Util.bytesToHex(pubBytes));
+		JSONObject obj = new JSONObject();
+		obj.put("account_id", address);
+		obj.put("public_key", publicKey);
+		System.out.println(obj);
+	}
 }
