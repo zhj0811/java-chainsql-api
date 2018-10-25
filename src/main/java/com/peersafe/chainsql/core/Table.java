@@ -23,7 +23,7 @@ public class Table extends Submit{
 	private String name;
 	private List<String> query = new ArrayList<String>();
 	private String exec;
-	private String tx_hash_field;
+	private String tx_hash_field = "";
 
 	/**
 	 * Constructor for Table.
