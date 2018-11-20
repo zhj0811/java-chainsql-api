@@ -2,13 +2,18 @@ package com.peersafe.base.client.transport.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.util.Arrays;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.Framedata;
@@ -105,6 +110,31 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         client.send(msg.toString());
     }
 
+	private X509TrustManager systemDefaultTrustManager() {
+		try {
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory
+					.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+			trustManagerFactory.init((KeyStore) null);
+			TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+			if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+				throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
+			}
+			return (X509TrustManager) trustManagers[0];
+		} catch (GeneralSecurityException e) {
+			throw new AssertionError(); // The system has no TLS. Just give up.
+		}
+	}
+
+	private SSLSocketFactory systemDefaultSslSocketFactory(X509TrustManager trustManager) {
+		try {
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(null, new TrustManager[] { trustManager }, null);
+			return sslContext.getSocketFactory();
+		} catch (GeneralSecurityException e) {
+			throw new AssertionError(); // The system has no TLS. Just give up.
+		}
+	}
+      
     @Override
     public void connect(URI uri) {
         TransportEventHandler curHandler = handler.get();
@@ -114,10 +144,53 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
         disconnect();
         client = new WS(uri);
 
+        if(uri.toString().contains("wss")) {
+        	X509TrustManager manager = systemDefaultTrustManager();
+        	SSLSocketFactory factory = systemDefaultSslSocketFactory(manager);
+        	
+        	try {
+                this.client.setSocket(factory.createSocket());
+            } catch (IOException var6) {
+                var6.printStackTrace();
+            }
+        }
+        
         client.setEventHandler(curHandler);
         curHandler.onConnecting(1);
         client.connect();
     }
+    
+//    @Override
+//	public void connectForAndroid(URI uri, boolean isPreLollipop) {
+//    	    TransportEventHandler curHandler = handler.get();
+//        if (curHandler == null) {
+//            throw new RuntimeException("must call setEventHandler() before connect(...)");
+//        }
+//        disconnect();
+//        client = new WS(uri);
+//
+//        if(uri.toString().contains("wss")) {
+//        	    try {
+//				if (isPreLollipop) {
+////					SSLContext sc = SSLContext.getInstance("TLSv1.2");
+////					sc.init(null, null, null);
+//					X509TrustManager manager = systemDefaultTrustManager();
+//					TLSSocketFactory factory = new TLSSocketFactory(manager);
+//					this.client.setSocket(factory.createSocket(uri.getHost(), 443));
+//				} else {
+//					X509TrustManager manager = systemDefaultTrustManager();
+//					SSLSocketFactory factory = systemDefaultSslSocketFactory(manager);
+//					this.client.setSocket(factory.createSocket());
+//				}
+//             } catch (Exception e) {
+//                e.printStackTrace();
+//             }
+//        }
+//        
+//        client.setEventHandler(curHandler);
+//        curHandler.onConnecting(1);
+//        client.connect();
+//    }
     
 	@Override
 	public void connectSSL(URI uri, String serverCertPath, String storePass) throws Exception{
@@ -137,17 +210,17 @@ public class JavaWebSocketTransportImpl implements WebSocketTransport {
 		String KEYSTORE = serverCertPath;
 		String STOREPASSWORD = storePass;
 
-		KeyStore ks = KeyStore.getInstance( STORETYPE );
+		KeyStore ks = KeyStore.getInstance( KeyStore.getDefaultType());
 		File kf = new File( KEYSTORE );
 		ks.load( new FileInputStream( kf ), STOREPASSWORD.toCharArray() );
 
 //		KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
 //		kmf.init( ks, KEYPASSWORD.toCharArray() );
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "SunX509" );
+		TrustManagerFactory tmf = TrustManagerFactory.getInstance( "X509");
 		tmf.init( ks );
 
 		SSLContext sslContext = null;
-		sslContext = SSLContext.getInstance( "TLS" );
+		sslContext = SSLContext.getInstance( "SSL" );
 		sslContext.init( null, tmf.getTrustManagers(), null );
 		SSLSocketFactory factory = sslContext.getSocketFactory();
 

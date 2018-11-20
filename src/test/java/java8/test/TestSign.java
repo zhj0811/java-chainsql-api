@@ -18,8 +18,8 @@ public class TestSign {
 		testSignPathset();
 		
 		String hello = "helloworld";
-		byte[] signature = Chainsql.sign(hello.getBytes(), "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
-		if(Chainsql.verify(hello.getBytes(), signature, "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw"))
+		byte[] signature = c.sign(hello.getBytes(), "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb");
+		if(c.verify(hello.getBytes(), signature, "cBQG8RQArjx1eTKFEAQXz2gS4utaDiEC9wmi7pfUPTi27VCchwgw"))
 		{
 			System.out.println("verify success");
 		}else {

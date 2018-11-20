@@ -13,21 +13,25 @@ public class TestChainsql {
 	public static String sTableName,sTableName2,sReName;
 	public static String sNewAccountId,sNewSecret;
 
-	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
-	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
+//	public static String rootAddress = "zHb9CJAWyB4zj91VRWn96DkukG4bwdtyTh";
+//	public static String rootSecret = "xnoPBzXtMeMyMHUVTgbuqAfg1SUTb";
 	
+	public static String rootAddress = "zP24krX8P3J3PHbSy7LwRPQsyf51ydEBu7";
+	public static String rootSecret = "xxSWH6cKHCsnEfbPVPVsWk7YduDY9";
 	public static void main(String[] args) {
-		c.connect("ws://139.198.11.189:6006");
+//		c.connect("wss://guruunion.com");
+		c.connect("ws://127.0.0.1:6008");
 		
-		sTableName = "tTable1";
+		sTableName = "tTable1231";
 		sTableName2 = "tTable2";
 		sReName = "tTable3";
 
-
+//		c.validationCreate();
 		c.as(rootAddress, rootSecret);
 
+		System.out.println(c.getChainInfo());
 
-		testAccount();
+//		testAccount();
 		testChainSql();
 
 		c.disconnect();
@@ -35,26 +39,27 @@ public class TestChainsql {
 	
 	private static void testChainSql() {
 		TestChainsql test = new TestChainsql();
+		test.testts();
 		//建表
-		test.testCreateTable();
-		//建表，用于重命名，删除
-		test.testCreateTable1();
-		//插入数据
-		test.testinsert();
-		//更新表数据
-		test.testUpdateTable();
-		//删除表数据
-		test.testdelete();
-		//重命名表
-		test.testrename();
-		//查询表数据
+//		test.testCreateTable();
+//		//建表，用于重命名，删除
+//		test.testCreateTable1();
+//		//插入数据
+//		test.testinsert();
+//		//更新表数据
+//		test.testUpdateTable();
+//		//删除表数据
+//		test.testdelete();
+//		//重命名表
+//		test.testrename();
+//		//查询表数据
 		test.testget();
-		//删除表
-		test.testdrop();
-		//授权
-		test.grant();
-		//授权后使用被授权账户插入数据
-		test.insertAfterGrant();
+//		//删除表
+//		test.testdrop();
+//		//授权
+//		test.grant();
+//		//授权后使用被授权账户插入数据
+//		test.insertAfterGrant();
 	}
 	
 	private static void testAccount() {
@@ -131,19 +136,14 @@ public class TestChainsql {
 
 	public void testts() {
 		c.beginTran();
-
-		 List<String> args =
-		 Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
-		 "{'field':'name','type':'varchar','length':50,'default':null}","{'field':'balance','type':'varchar','length':50,'default':null}","{'field':'age','type':'int'}"
-		 );
-		c.table(sTableName).insert(Util.array("{'age': 22}", "{'age': 33}"));
-		c.table(sTableName).get(Util.array("{'id': 1}")).update("{'age':244}");
+		c.table(sTableName).insert(Util.array("{'id':5,'age': 22}"));
+		c.table(sTableName).get(Util.array("{'id': 5}")).update("{'age':255}");
 		JSONObject obj = c.commit(SyncCond.db_success);
 		System.out.println("transaction result:" + obj);
 	}
 
 	public void testCreateTable() {
-		List<String> args = Util.array("{'field':'id','type':'int','length':11,'PK':1,'NN':1,'UQ':1,'AI':1}",
+		List<String> args = Util.array("{'field':'id','type':'int','length':11,'NN':1,'UQ':1}",
 				"{'field':'name','type':'varchar','length':50,'default':null}", "{'field':'age','type':'int'}");
 		JSONObject obj;
 		obj = c.createTable(sTableName,args,false).submit(SyncCond.db_success);
@@ -151,7 +151,7 @@ public class TestChainsql {
 	}
 
 	public void testinsert() {
-		List<String> orgs = Util.array("{'age': 333,'name':'hello'}","{'age': 444,'name':'sss'}","{'age': 555,'name':'rrr'}");
+		List<String> orgs = Util.array("{'id':1,'age': 333,'name':'hello'}","{'id':2,'age': 444,'name':'sss'}","{'id':3,'age': 555,'name':'rrr'}");
 		JSONObject obj;
 		obj = c.table(sTableName).insert(orgs).submit(SyncCond.db_success);
 		System.out.println("insert result:" + obj);

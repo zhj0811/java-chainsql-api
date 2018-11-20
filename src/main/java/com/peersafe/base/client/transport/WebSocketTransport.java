@@ -14,4 +14,5 @@ public interface WebSocketTransport {
      * {@link com.peersafe.base.client.transport.TransportEventHandler#onDisconnected}
      */
     public abstract void disconnect();
+//    public abstract void connectForAndroid(URI uri, boolean isPreLollipop);
 }
