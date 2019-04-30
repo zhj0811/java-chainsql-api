@@ -45,7 +45,7 @@ public class TxFormat extends Format {
     public void addCommonFields() {
         put(Field.TransactionType,     Requirement.REQUIRED);
         put(Field.Account,             Requirement.REQUIRED);
-        put(Field.Sequence,            Requirement.REQUIRED);
+        put(Field.Sequence,            Requirement.OPTIONAL);
         put(Field.Fee,                 Requirement.REQUIRED);
         put(Field.SigningPubKey,       Requirement.REQUIRED);
 
